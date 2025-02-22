@@ -92,6 +92,23 @@ const SignUpPage: React.FC = () => {
           </button>
         </div>
 
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full border border-[#6A994E] p-3 pr-10 mb-6 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#386641]"
+          >
+            {showPassword ? "👁" : "👁‍🗨"}
+          </button>
+        </div>
+
         <div className="mb-4">
           <p className="text-[#6A994E] mb-2 text-left">Link your PayPal</p>
           <div className="flex justify-start">
@@ -99,6 +116,7 @@ const SignUpPage: React.FC = () => {
               <img src={paypalIcon} alt="Link your PayPal" className="h-12 w-40" />
             </button>
           </div>
+          
         </div>
 
         <button

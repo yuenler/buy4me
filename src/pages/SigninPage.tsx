@@ -1,12 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const SignInPage: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSignIn = async () => {
     try {
@@ -40,13 +43,23 @@ const SignInPage: React.FC = () => {
           onChange={(e) => setEmail(e.target.value)}
           className="w-full border border-[#6A994E] p-3 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
         />
-        <input
-          type="password"
-          placeholder="Your Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border border-[#6A994E] p-3 mb-6 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
-        />
+
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Your Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full border border-[#6A994E] p-3 pr-10 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#386641]"
+          >
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+          </button>
+        </div>
 
         <button
           onClick={handleSignIn}
@@ -54,6 +67,15 @@ const SignInPage: React.FC = () => {
         >
           Sign In
         </button>
+
+        <div className="mt-4 text-center">
+          <p>
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-[#BC4749] hover:underline font-bold">
+              Sign Up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

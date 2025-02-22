@@ -1,6 +1,5 @@
-// src/App.tsx
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
 import SignInPage from './pages/SigninPage';
@@ -17,12 +16,10 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for changes in authentication state
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setLoading(false);
     });
-    // Cleanup subscription on unmount
     return unsubscribe;
   }, []);
 
@@ -38,43 +35,51 @@ const App: React.FC = () => {
     <Router>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Routes>
-          <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/signin" element={<SignInPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/add-friends" element={<AddFriendsPage />} />
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/" element={<HomePage />} />
+          {currentUser ? (
+            <>
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/signin" element={<Navigate to="/" />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/add-friends" element={<AddFriendsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/" element={<HomePage />} />
+            </>
+          ) : (
+            <Route path="/*" element={<SignInPage />} />
+          )}
         </Routes>
-        <nav style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          display: 'flex',
-          justifyContent: 'space-around',
-          padding: '10px',
-          borderTop: '1px solid #ccc',
-          backgroundColor: '#fff',
-        }}>
-          <Link to="/notifications" style={{ textDecoration: 'none' }}>
-            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-              <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
-              <span style={{ fontSize: '12px' }}>Help</span>
-            </button>
-          </Link>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-              <FontAwesomeIcon icon={faBagShopping} size="lg" />
-              <span style={{ fontSize: '12px' }}>Shop</span>
-            </button>
-          </Link>
-          <Link to="/profile" style={{ textDecoration: 'none' }}>
-            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-              <FontAwesomeIcon icon={faUser} size="lg" />
-              <span style={{ fontSize: '12px' }}>Profile</span>
-            </button>
-          </Link>
-        </nav>
+        {currentUser && (
+          <nav style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            display: 'flex',
+            justifyContent: 'space-around',
+            padding: '10px',
+            borderTop: '1px solid #ccc',
+            backgroundColor: '#fff',
+          }}>
+            <Link to="/notifications" style={{ textDecoration: 'none' }}>
+              <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+                <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
+                <span style={{ fontSize: '12px' }}>Help</span>
+              </button>
+            </Link>
+            <Link to="/" style={{ textDecoration: 'none' }}>
+              <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+                <FontAwesomeIcon icon={faBagShopping} size="lg" />
+                <span style={{ fontSize: '12px' }}>Shop</span>
+              </button>
+            </Link>
+            <Link to="/profile" style={{ textDecoration: 'none' }}>
+              <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+                <FontAwesomeIcon icon={faUser} size="lg" />
+                <span style={{ fontSize: '12px' }}>Profile</span>
+              </button>
+            </Link>
+          </nav>
+        )}
       </div>
     </Router>
   );

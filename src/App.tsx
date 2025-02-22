@@ -6,6 +6,8 @@ import SignUpPage from './pages/SignUpPage';
 import ProfilePage from './pages/ProfilePage';
 import AddFriendsPage from './pages/AddFriendsPage';
 import NotificationsPage from './pages/NotificationsPage';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBell, faHome, faUser } from '@fortawesome/free-solid-svg-icons';
 
 const App: React.FC = () => {
   return (
@@ -29,9 +31,24 @@ const App: React.FC = () => {
           borderTop: '1px solid #ccc',
           backgroundColor: '#fff',
         }}>
-          <Link to="/notifications" style={{ textDecoration: 'none' }}><button>Notifications</button></Link>
-          <Link to="/" style={{ textDecoration: 'none' }}><button>Home</button></Link>
-          <Link to="/profile" style={{ textDecoration: 'none' }}><button>Profile</button></Link>
+          <Link to="/notifications" style={{ textDecoration: 'none' }}>
+            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <FontAwesomeIcon icon={faBell} size="lg" />
+              <span style={{ fontSize: '12px' }}>Notifications</span>
+            </button>
+          </Link>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <FontAwesomeIcon icon={faHome} size="lg" />
+              <span style={{ fontSize: '12px' }}>Home</span>
+            </button>
+          </Link>
+          <Link to="/profile" style={{ textDecoration: 'none' }}>
+            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <FontAwesomeIcon icon={faUser} size="lg" />
+              <span style={{ fontSize: '12px' }}>Profile</span>
+            </button>
+          </Link>
         </nav>
       </div>
     </Router>

@@ -27,6 +27,7 @@ const SignUpPage: React.FC = () => {
         phoneNumber,
         paypal,
         email,
+        friends: [],
         // add any other fields you want here, e.g. location, etc.
       });
 

@@ -1,68 +1,135 @@
 // src/pages/AddFriendsPage.tsx
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   collection,
   query,
   where,
   getDocs,
   addDoc,
+  deleteDoc,
+  doc,
+  orderBy,
+  startAt,
+  endAt,
   DocumentData,
-} from 'firebase/firestore';
-import { auth, firestore } from '../firebase';
+} from "firebase/firestore";
+import { auth, firestore } from "../firebase";
 
 const AddFriendsPage: React.FC = () => {
   const navigate = useNavigate();
-  const [queryText, setQueryText] = useState('');
+  const [queryText, setQueryText] = useState("");
   const [results, setResults] = useState<DocumentData[]>([]);
+  const [friendRequests, setFriendRequests] = useState<DocumentData[]>([]);
   const user = auth.currentUser;
 
+  // Fetch profiles based on a partial (prefix) search
   useEffect(() => {
     if (!user) return;
-    // If user clears the search box, clear results
     if (!queryText) {
       setResults([]);
       return;
     }
 
-    // Example: exact match on "username" == queryText
-    // For partial matching, you need more advanced queries or a 3rd-party search approach.
     const fetchProfiles = async () => {
       try {
+        const profilesRef = collection(firestore, "profiles");
         const q = query(
-          collection(firestore, 'profiles'),
-          where('username', '==', queryText)
+          profilesRef,
+          orderBy("username"),
+          startAt(queryText),
+          endAt(queryText + "\uf8ff")
         );
         const snapshot = await getDocs(q);
-        const found = snapshot.docs.map((doc) => {
-          return { uid: doc.id, ...doc.data() };
-        });
+        const found = snapshot.docs.map((doc) => ({
+          uid: doc.id,
+          ...doc.data(),
+        }));
         setResults(found);
       } catch (error) {
-        console.error('Error searching profiles:', error);
+        console.error("Error searching profiles:", error);
       }
     };
 
     fetchProfiles();
   }, [queryText, user]);
 
-  const sendFriendRequest = async (friendUid: string) => {
-    try {
-      if (!user) {
-        alert('Please sign in first');
-        return;
+  // Fetch friend requests that the current user has sent
+  useEffect(() => {
+    if (!user) return;
+    const fetchFriendRequests = async () => {
+      try {
+        const friendRequestsRef = collection(firestore, "friend_requests");
+        const q = query(
+          friendRequestsRef,
+          where("initiatorId", "==", user.uid)
+        );
+        const snapshot = await getDocs(q);
+        const requests = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setFriendRequests(requests);
+      } catch (error) {
+        console.error("Error fetching friend requests:", error);
       }
-      // Create a friend request doc in Firestore (top-level collection or subcollection)
-      await addDoc(collection(firestore, 'friend_requests'), {
-        receiverId: friendUid,
-        initiatorId: user.uid,
-        status: 'pending',
-        timestamp: Date.now(),
-      });
-      alert(`Friend request sent to user with uid: ${friendUid}`);
-    } catch (error) {
-      console.error('Error sending friend request:', error);
-      alert('Failed to send friend request');
+    };
+
+    fetchFriendRequests();
+  }, [user]);
+
+  // Toggle friend request: send a new request or cancel an existing one.
+  const toggleFriendRequest = async (friendUid: string) => {
+    if (!user) {
+      alert("Please sign in first");
+      return;
+    }
+
+    // Prevent friend requesting yourself
+    if (friendUid === user.uid) {
+      alert("You cannot friend request yourself.");
+      return;
+    }
+
+    // Check if a pending friend request already exists for this user
+    const existingRequest = friendRequests.find(
+      (req) => req.receiverId === friendUid && req.status === "pending"
+    );
+
+    if (existingRequest) {
+      // Undo (cancel) the friend request
+      try {
+        await deleteDoc(doc(firestore, "friend_requests", existingRequest.id));
+        setFriendRequests((prev) =>
+          prev.filter((req) => req.id !== existingRequest.id)
+        );
+      } catch (error) {
+        console.error("Error cancelling friend request:", error);
+        alert("Failed to cancel friend request");
+      }
+    } else {
+      // Send a new friend request
+      try {
+        const docRef = await addDoc(collection(firestore, "friend_requests"), {
+          receiverId: friendUid,
+          initiatorId: user.uid,
+          status: "pending",
+          timestamp: Date.now(),
+        });
+        setFriendRequests((prev) => [
+          ...prev,
+          {
+            id: docRef.id,
+            receiverId: friendUid,
+            initiatorId: user.uid,
+            status: "pending",
+            timestamp: Date.now(),
+          },
+        ]);
+      } catch (error) {
+        console.error("Error sending friend request:", error);
+        alert("Failed to send friend request");
+      }
     }
   };
 
@@ -82,26 +149,45 @@ const AddFriendsPage: React.FC = () => {
       <h2 className="text-2xl mb-4">Add Friends</h2>
       <input
         type="text"
-        placeholder="Search by exact username..."
+        placeholder="Search by username..."
         value={queryText}
         onChange={(e) => setQueryText(e.target.value)}
         className="w-full border p-2 mb-4 rounded"
       />
       <ul>
-        {results.map((profile) => (
-          <li
-            key={profile.uid}
-            className="bg-white p-4 mb-2 rounded shadow flex justify-between items-center"
-          >
-            <span>{profile.username}</span>
-            <button
-              onClick={() => sendFriendRequest(profile.uid)}
-              className="bg-blue-500 text-white px-4 py-2 rounded"
+        {results.map((profile) => {
+          const isSelf = profile.uid === user.uid;
+          const isRequested = friendRequests.some(
+            (req) => req.receiverId === profile.uid && req.status === "pending"
+          );
+          return (
+            <li
+              key={profile.uid}
+              className="bg-white p-4 mb-2 rounded shadow flex justify-between items-center"
             >
-              Request
-            </button>
-          </li>
-        ))}
+              <span>{profile.username}</span>
+              {isSelf ? (
+                <button
+                  disabled
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded cursor-not-allowed"
+                >
+                  Request
+                </button>
+              ) : (
+                <button
+                  onClick={() => toggleFriendRequest(profile.uid)}
+                  className={`px-4 py-2 rounded ${
+                    isRequested
+                      ? "bg-gray-500 text-white"
+                      : "bg-blue-500 text-white"
+                  }`}
+                >
+                  {isRequested ? "Requested" : "Request"}
+                </button>
+              )}
+            </li>
+          );
+        })}
       </ul>
     </div>
   );

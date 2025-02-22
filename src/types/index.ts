@@ -18,9 +18,10 @@ export interface Friend {
 export interface Request {
   // The order request
   id?: string;
+  buyerUsername: string;
   buyerId: string | null;
   requesterId: string | null;
-  items: string[] | null;
+  text: string | null;
   fullPrice: number | null;
   timestamp: number | null;
   unboughtItems: string[] | null;

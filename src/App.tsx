@@ -1,5 +1,5 @@
 // src/App.tsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
@@ -9,8 +9,32 @@ import AddFriendsPage from './pages/AddFriendsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBell, faHome, faUser } from '@fortawesome/free-solid-svg-icons';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase';
+import SignInPage from './pages/SigninPage';
 
 const App: React.FC = () => {
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Listen for changes in authentication state
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+      setLoading(false);
+    });
+    // Cleanup subscription on unmount
+    return unsubscribe;
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>

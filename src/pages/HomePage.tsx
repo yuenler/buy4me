@@ -94,79 +94,85 @@ const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F2E8CF] flex flex-col items-center p-6 text-[#386641]">
-      <h1 className="text-4xl font-extrabold text-center mb-8">Home Page</h1>
+    <div className="min-h-screen bg-[#F2E8CF] p-6 flex justify-center">
+      <div className="w-full max-w-lg text-[#386641]">
+        <h1 className="text-4xl font-extrabold text-center mb-8">buy4me?</h1>
 
-      {/* 🛒 Request Section */}
-      <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957] w-full max-w-lg">
-        <h2 className="text-2xl font-semibold mb-4">Make a Request</h2>
-        {friends.length === 0 ? (
-          <p className="text-sm text-[#6A994E]">No friends found</p>
-        ) : (
-          <div className="flex flex-col space-y-4">
-            <label className="font-medium" htmlFor="friendSelect">
-              Select a friend:
-            </label>
-            <select
-              id="friendSelect"
-              value={selectedFriend}
-              onChange={(e) => setSelectedFriend(e.target.value)}
-              className="p-3 rounded border border-[#A7C957] bg-[#F2E8CF] text-[#386641]"
-            >
-              {friends.map((friend) => (
-                <option key={friend.id} value={friend.id}>
-                  {friend.username}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => selectedFriend && setModalVisible(true)}
-              disabled={!selectedFriend}
-              className="bg-[#6A994E] hover:bg-[#386641] text-white font-semibold py-2 px-4 rounded shadow-md disabled:opacity-50"
-            >
-              Request
-            </button>
-          </div>
-        )}
-      </section>
-
-      {/* 🔄 Pending Requests */}
-      <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957] w-full max-w-lg">
-        <h2 className="text-2xl font-semibold mb-2">Pending Requests</h2>
-        {requests.filter((r) => r.fulfillment === 'pending').length === 0 ? (
-          <p className="text-sm text-[#6A994E]">No pending requests</p>
-        ) : (
-          requests.map((req) => (
-            <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm">
-              <p className="font-medium">{req.buyerUsername}</p>
-              <p className="text-sm">{req.text}</p>
+        {/* 🛒 Request Section */}
+        <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957]">
+          <h2 className="text-2xl font-semibold mb-4">Make a Request</h2>
+          {friends.length === 0 ? (
+            <p className="text-sm text-[#6A994E]">No friends found</p>
+          ) : (
+            <div className="flex flex-col space-y-4">
+              <label className="font-medium" htmlFor="friendSelect">
+                Select a friend:
+              </label>
+              <select
+                id="friendSelect"
+                value={selectedFriend}
+                onChange={(e) => setSelectedFriend(e.target.value)}
+                className="p-3 rounded border border-[#A7C957] bg-[#F2E8CF] text-[#386641]"
+              >
+                {friends.map((friend) => (
+                  <option key={friend.id} value={friend.id}>
+                    {friend.username}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => selectedFriend && setModalVisible(true)}
+                disabled={!selectedFriend}
+                className="bg-[#6A994E] hover:bg-[#386641] text-white font-semibold py-2 px-4 rounded shadow-md disabled:opacity-50"
+              >
+                Request
+              </button>
             </div>
-          ))
-        )}
-      </section>
+          )}
+        </section>
 
-      {/* 📝 Past Requests */}
-      <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957] w-full max-w-lg">
-        <h2 className="text-2xl font-semibold mb-2">Past Requests</h2>
-        {requests.filter((r) => r.fulfillment !== 'pending').length === 0 ? (
-          <p className="text-sm text-[#6A994E]">No past requests</p>
-        ) : (
-          requests.map((req) => (
-            <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm">
-              <p className="font-medium">{req.buyerUsername}</p>
-              <p className="text-sm">{req.text}</p>
-            </div>
-          ))
-        )}
-      </section>
+        {/* 🔄 Pending Requests */}
+        <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957]">
+          <h2 className="text-2xl font-semibold mb-2">Pending Requests</h2>
+          {requests.filter((r) => r.fulfillment === 'pending').length === 0 ? (
+            <p className="text-sm text-[#6A994E]">No pending requests</p>
+          ) : (
+            requests
+              .filter((r) => r.fulfillment === 'pending')
+              .map((req) => (
+                <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm">
+                  <p className="font-medium">{req.buyerUsername}</p>
+                  <p className="text-sm">{req.text}</p>
+                </div>
+              ))
+          )}
+        </section>
 
-      {modalVisible && selectedFriend && (
-        <FriendModal
-          friendName={friends.find((f) => f.id === selectedFriend)?.username || 'Unknown Friend'}
-          onClose={() => setModalVisible(false)}
-          onSendRequest={handleSendRequest}
-        />
-      )}
+        {/* 📝 Past Requests */}
+        <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957]">
+          <h2 className="text-2xl font-semibold mb-2">Past Requests</h2>
+          {requests.filter((r) => r.fulfillment !== 'pending').length === 0 ? (
+            <p className="text-sm text-[#6A994E]">No past requests</p>
+          ) : (
+            requests
+              .filter((r) => r.fulfillment !== 'pending')
+              .map((req) => (
+                <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm">
+                  <p className="font-medium">{req.buyerUsername}</p>
+                  <p className="text-sm">{req.text}</p>
+                </div>
+              ))
+          )}
+        </section>
+
+        {modalVisible && selectedFriend && (
+          <FriendModal
+            friendName={friends.find((f) => f.id === selectedFriend)?.username || 'Unknown Friend'}
+            onClose={() => setModalVisible(false)}
+            onSendRequest={handleSendRequest}
+          />
+        )}
+      </div>
     </div>
   );
 };

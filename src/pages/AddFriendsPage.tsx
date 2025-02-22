@@ -217,90 +217,105 @@ const AddFriendsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <button onClick={() => navigate(-1)} className="mb-4 text-blue-500">
-        &larr; Back
-      </button>
+    <div className="min-h-screen bg-[#F2E8CF] p-6 flex justify-center">
+      <div className="w-full max-w-lg">
+        {/* Back Button */}
+        <button
+          onClick={() => navigate(-1)}
+          className="mb-4 text-[#BC4749] font-semibold hover:underline"
+        >
+          &larr; Back
+        </button>
 
-      {/* Existing Friends Section */}
-      <div className="mb-6">
-        <h2 className="text-2xl mb-2">Your Friends</h2>
-        {friends.length > 0 ? (
-          <ul className="flex space-x-4 overflow-x-auto">
-            {friends.map((friend) => (
+        {/* Page Title */}
+        <h2 className="text-3xl font-bold text-center text-[#386641] mb-6">
+          Add Friends
+        </h2>
+
+        {/* Existing Friends Section */}
+        <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-[#6A994E] mb-4">Your Friends</h2>
+          {friends.length > 0 ? (
+            <ul className="flex gap-3 overflow-x-auto py-2 scrollbar-hide">
+              {friends.map((friend) => (
+                <li
+                  key={friend.uid}
+                  className="flex flex-col items-center bg-white p-3 rounded-xl shadow-md min-w-[80px]"
+                >
+                  {friend.picture ? (
+                    <img
+                      src={friend.picture}
+                      alt={friend.username}
+                      className="rounded-full w-12 h-12 mb-1"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center w-12 h-12 bg-gray-300 rounded-full mb-1">
+                      <FontAwesomeIcon icon={faUser} className="text-gray-600" />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-[#386641] text-center">
+                    {friend.username}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-700 text-center">You have no friends yet.</p>
+          )}
+        </div>
+
+        {/* Search for Friends */}
+        <h2 className="text-2xl font-semibold text-[#6A994E] mb-4">Find Friends</h2>
+        <input
+          type="text"
+          placeholder="Search by username..."
+          value={queryText}
+          onChange={(e) => setQueryText(e.target.value)}
+          className="w-full border border-[#A7C957] p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#A7C957] bg-white text-[#386641]"
+        />
+
+        {/* Search Results */}
+        <ul className="mt-4 space-y-3">
+          {results.map((profile) => {
+            const isSelf = profile.uid === user.uid;
+            const isExistingFriend =
+              currentUserProfile &&
+              currentUserProfile.friends &&
+              currentUserProfile.friends.includes(profile.uid);
+            const isRequested = friendRequests.some(
+              (req) => req.receiverId === profile.uid
+            );
+
+            return (
               <li
-                key={friend.uid}
-                className="flex flex-col items-center bg-white p-2 rounded shadow"
+                key={profile.uid}
+                className="bg-white p-4 rounded-lg shadow-md flex justify-between items-center"
               >
-                {friend.picture ? (
-                  <img
-                    src={friend.picture}
-                    alt={friend.username}
-                    className="rounded-full w-12 h-12 mb-1"
-                  />
+                <span className="text-[#386641] font-medium">{profile.username}</span>
+                {isSelf || isExistingFriend ? (
+                  <button
+                    disabled
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded cursor-not-allowed"
+                  >
+                    Request
+                  </button>
                 ) : (
-                  <div className="flex items-center justify-center w-12 h-12 bg-gray-200 rounded-full mb-1">
-                    <FontAwesomeIcon icon={faUser} className="text-gray-500" />
-                  </div>
+                  <button
+                    onClick={() => toggleFriendRequest(profile.uid, profile.username)}
+                    className={`px-4 py-2 rounded ${
+                      isRequested
+                        ? "bg-gray-500 text-white cursor-not-allowed"
+                        : "bg-[#6A994E] hover:bg-[#386641] text-white"
+                    }`}
+                  >
+                    {isRequested ? "Requested" : "Request"}
+                  </button>
                 )}
-                <span className="text-sm">{friend.username}</span>
               </li>
-            ))}
-          </ul>
-        ) : (
-          <p>You have no friends yet.</p>
-        )}
+            );
+          })}
+        </ul>
       </div>
-
-      <h2 className="text-2xl mb-4">Add Friends</h2>
-      <input
-        type="text"
-        placeholder="Search by username..."
-        value={queryText}
-        onChange={(e) => setQueryText(e.target.value)}
-        className="w-full border p-2 mb-4 rounded"
-      />
-      <ul>
-        {results.map((profile) => {
-          const isSelf = profile.uid === user.uid;
-          const isExistingFriend =
-            currentUserProfile &&
-            currentUserProfile.friends &&
-            currentUserProfile.friends.includes(profile.uid);
-          const isRequested = friendRequests.some(
-            (req) => req.receiverId === profile.uid
-          );
-          return (
-            <li
-              key={profile.uid}
-              className="bg-white p-4 mb-2 rounded shadow flex justify-between items-center"
-            >
-              <span>{profile.username}</span>
-              {isSelf || isExistingFriend ? (
-                <button
-                  disabled
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded cursor-not-allowed"
-                >
-                  Request
-                </button>
-              ) : (
-                <button
-                  onClick={() =>
-                    toggleFriendRequest(profile.uid, profile.username)
-                  }
-                  className={`px-4 py-2 rounded ${
-                    isRequested
-                      ? "bg-gray-500 text-white"
-                      : "bg-blue-500 text-white"
-                  }`}
-                >
-                  {isRequested ? "Requested" : "Request"}
-                </button>
-              )}
-            </li>
-          );
-        })}
-      </ul>
     </div>
   );
 };

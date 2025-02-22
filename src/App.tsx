@@ -34,34 +34,38 @@ const App: React.FC = () => {
   return (
     <Router>
       <div className="flex flex-col min-h-screen">
-        <Routes>
-          {currentUser ? (
-            <>
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/signin" element={<Navigate to="/" />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/add-friends" element={<AddFriendsPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/" element={<HomePage />} />
-            </>
-          ) : (
-            <Route path="/*" element={<SignInPage />} />
-          )}
-        </Routes>
+      <Routes>
+        {currentUser ? (
+          <>
+            <Route path="/signup" element={<Navigate to="/" />} />
+            <Route path="/signin" element={<Navigate to="/" />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/add-friends" element={<AddFriendsPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/" element={<HomePage />} />
+          </>
+        ) : (
+          <>
+            <Route path="/signup" element={<SignUpPage />} />
+            <Route path="/signin" element={<SignInPage />} />
+            <Route path="/*" element={<Navigate to="/signin" />} />
+          </>
+        )}
+      </Routes>
 
         {currentUser && (
           <nav className="fixed bottom-0 left-0 right-0 bg-white flex justify-center gap-10 py-4 border-t border-[#D1D1D1]">
             <Link to="/notifications" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
               <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
-              <span className="text-sm mt-1">Help</span>
+              <span className="text-sm mt-1">buy4others</span>
             </Link>
             <Link to="/" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
               <FontAwesomeIcon icon={faBagShopping} size="lg" />
-              <span className="text-sm mt-1">Shop</span>
+              <span className="text-sm mt-1">buy4me</span>
             </Link>
             <Link to="/profile" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
               <FontAwesomeIcon icon={faUser} size="lg" />
-              <span className="text-sm mt-1">Profile</span>
+              <span className="text-sm mt-1">profile</span>
             </Link>
           </nav>
         )}

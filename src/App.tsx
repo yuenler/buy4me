@@ -7,7 +7,7 @@ import ProfilePage from './pages/ProfilePage';
 import AddFriendsPage from './pages/AddFriendsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBell, faHome, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faBagShopping, faBell, faHandHoldingHeart, faHome, faShoppingCart, faUser } from '@fortawesome/free-solid-svg-icons';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import SignInPage from './pages/SigninPage';
@@ -57,19 +57,19 @@ const App: React.FC = () => {
           backgroundColor: '#fff',
         }}>
           <Link to="/notifications" style={{ textDecoration: 'none' }}>
-            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <FontAwesomeIcon icon={faBell} size="lg" />
-              <span style={{ fontSize: '12px' }}>Notifications</span>
+            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+              <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
+              <span style={{ fontSize: '12px' }}>Help</span>
             </button>
           </Link>
           <Link to="/" style={{ textDecoration: 'none' }}>
-            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <FontAwesomeIcon icon={faHome} size="lg" />
-              <span style={{ fontSize: '12px' }}>Home</span>
+            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
+              <FontAwesomeIcon icon={faBagShopping} size="lg" />
+              <span style={{ fontSize: '12px' }}>Shop</span>
             </button>
           </Link>
           <Link to="/profile" style={{ textDecoration: 'none' }}>
-            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
               <FontAwesomeIcon icon={faUser} size="lg" />
               <span style={{ fontSize: '12px' }}>Profile</span>
             </button>

@@ -1,7 +1,13 @@
 // src/pages/NotificationsPage.tsx
 import React from 'react';
+import { auth } from '../firebase';
 
 const NotificationsPage: React.FC = () => {
+  const user = auth.currentUser;
+  if (!user) {
+    return <div>Please sign in to view Notifications.</div>;
+  }
+
   // In a real app, fetch notifications from Firebase.
   const notifications = [
     { id: '1', type: 'requestReceived', items: 'Bananas, Milk', sender: 'Alice' },

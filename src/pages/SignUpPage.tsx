@@ -28,7 +28,6 @@ const SignUpPage: React.FC = () => {
         paypal,
         email,
         friends: [],
-        // add any other fields you want here, e.g. location, etc.
       });
 
       console.log('User signed up with:', { username, phoneNumber, paypal, email });

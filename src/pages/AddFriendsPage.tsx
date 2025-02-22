@@ -53,7 +53,7 @@ const AddFriendsPage: React.FC = () => {
         return;
       }
       // Create a friend request doc in Firestore (top-level collection or subcollection)
-      await addDoc(collection(firestore, 'friendRequests'), {
+      await addDoc(collection(firestore, 'friend_requests'), {
         receiverId: friendUid,
         initiatorId: user.uid,
         status: 'pending',

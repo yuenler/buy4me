@@ -138,7 +138,7 @@ const ProfilePage: React.FC = () => {
             </div>
           )}
         </div>
-        <h2 className="text-center text-2xl mt-4">Your Profile</h2>
+        <h2 className="text-center text-2xl mt-4">{profile?.username}</h2>
         <p className="text-center mt-2">Friends: {friendCount}</p>
         <div className="mt-4">
           <h3 className="font-bold">Profile Setup Status:</h3>

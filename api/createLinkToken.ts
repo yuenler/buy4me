@@ -19,9 +19,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    const { userId } = req.body; // Get userId from request body
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
     const response = await client.linkTokenCreate({
-      user: { client_user_id: 'user-123' }, // Replace with actual user ID
-      client_name: 'Your App Name',
+      user: { client_user_id: userId }, // Use dynamic userId
+      client_name: 'buy4me?',
       products: ['transactions'],
       country_codes: ['US'],
       language: 'en',
@@ -29,7 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json(response.data);
   } catch (error) {
-    console.error(error);
+    console.error('Error creating link token:', error);
     res.status(500).json({ error: 'Error creating link token' });
   }
 }

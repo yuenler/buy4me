@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBagShopping, faBell, faHandHoldingHeart, faHome, faShoppingCart, faUser } from '@fortawesome/free-solid-svg-icons';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-import SignInPage from './pages/SigninPage';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);

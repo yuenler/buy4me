@@ -47,14 +47,10 @@ const HomePage: React.FC = () => {
 
     const fetchFriends = async () => {
       try {
-        // In your data model, each user has a profile doc at `profiles/{userId}`
-        // Then a subcollection "friends" or a field "friends" in that doc.
-        // Example below assumes a subcollection "friends".
-        const friendsRef = collection(firestore, 'profiles', userId, 'friends');
-        const friendsSnapshot = await getDocs(friendsRef);
-        const friendIds = friendsSnapshot.docs.map((doc) => doc.id);
-
-        const friendPromises = friendIds.map(async (friendId) => {
+        const userRef = doc(firestore, 'profiles', userId);
+        const userSnapshot = await getDoc(userRef);
+        const friendIds: string[] = userSnapshot.data()?.friends || [];
+        const friendPromises = friendIds.map(async (friendId: string) => {
           const friendProfileDoc = await getDoc(doc(firestore, 'profiles', friendId));
           return {
             id: friendId,
@@ -85,16 +81,17 @@ const HomePage: React.FC = () => {
   const pendingRequests = requests.filter((r) => r.fulfillment === 'pending');
   const pastRequests = requests.filter((r) => r.fulfillment !== 'pending');
 
-  const handleSendRequest = async (items: string, store: string) => {
+  const handleSendRequest = async (requestText: string) => {
     if (!selectedFriend) return;
     try {
       const newRequest: Omit<Request, 'id'> = {
+        buyerUsername: friends.find((f) => f.id === selectedFriend)?.username || '',
         buyerId: selectedFriend,
         requesterId: userId,
-        items: items ? items.split(',').map((item) => item.trim()) : null,
+        text: requestText,
         fullPrice: null,
         timestamp: Date.now(),
-        unboughtItems: items ? items.split(',').map((item) => item.trim()) : null,
+        unboughtItems: [],
         fulfillment: 'pending',
       };
 
@@ -153,12 +150,21 @@ const HomePage: React.FC = () => {
           <div className="space-y-4">
             {pendingRequests.map((req) => (
               <div key={req.id} className="bg-white p-4 rounded shadow">
-                <p className="font-medium">Request ID: {req.id}</p>
-                <p>Buyer: {req.buyerId}</p>
-                <p>Items: {req.items?.join(', ') || '—'}</p>
-                <p>
-                  Status: <span className="text-blue-600">{req.fulfillment}</span>
+                <p className="font-medium flex items-center">
+                  <span className="mr-2">{req.buyerUsername}</span>
+                  <span
+                    className={`${
+                      req.fulfillment === 'pending'
+                        ? 'text-blue-600'
+                        : req.fulfillment === 'completed'
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    }`}
+                  >
+                    {req.fulfillment}
+                  </span>
                 </p>
+                <p className="text-sm">{req.text}</p>
               </div>
             ))}
           </div>
@@ -173,23 +179,21 @@ const HomePage: React.FC = () => {
           <div className="space-y-4">
             {pastRequests.map((req) => (
               <div key={req.id} className="bg-white p-4 rounded shadow">
-                <p className="font-medium">Request ID: {req.id}</p>
-                <p>Buyer: {req.buyerId}</p>
-                <p>Items: {req.items?.join(', ') || '—'}</p>
-                <p>
-                  Status:{' '}
+                <p className="font-medium flex items-center">
+                  <span className="mr-2">{req.buyerUsername}</span>
                   <span
-                    className={
+                    className={`${
                       req.fulfillment === 'completed'
                         ? 'text-green-600'
                         : req.fulfillment === 'canceled'
                         ? 'text-red-600'
                         : 'text-gray-600'
-                    }
+                    }`}
                   >
                     {req.fulfillment}
                   </span>
                 </p>
+                <p className="text-sm">{req.text}</p>
               </div>
             ))}
           </div>

@@ -16,6 +16,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { PlaidLink } from "react-plaid-link";
 import axios from "axios";
+import { DocumentData } from "firebase/firestore";
+
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
@@ -110,6 +112,8 @@ const ProfilePage: React.FC = () => {
       await updateDoc(doc(firestore, "profiles", user.uid), {
         friends: arrayUnion(initiatorId),
       });
+
+      const initiatorRef = doc(firestore, "profiles", initiatorId);
 
       await updateDoc(initiatorRef, {
         friends: arrayUnion(user.uid),

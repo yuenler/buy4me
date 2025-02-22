@@ -7,7 +7,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AddFriendsPage from "./pages/AddFriendsPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBell, faHome, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBell, faHeart, faHome, faShop, faUser } from "@fortawesome/free-solid-svg-icons";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import SignInPage from "./pages/SigninPage";
@@ -70,8 +70,8 @@ const App: React.FC = () => {
                 alignItems: "center",
               }}
             >
-              <FontAwesomeIcon icon={faBell} size="lg" />
-              <span style={{ fontSize: "12px" }}>Notifications</span>
+              <FontAwesomeIcon icon={faHeart} size="lg" />
+              <span style={{ fontSize: "12px" }}>Help others</span>
             </button>
           </Link>
           <Link to="/" style={{ textDecoration: "none" }}>
@@ -84,8 +84,8 @@ const App: React.FC = () => {
                 alignItems: "center",
               }}
             >
-              <FontAwesomeIcon icon={faHome} size="lg" />
-              <span style={{ fontSize: "12px" }}>Home</span>
+              <FontAwesomeIcon icon={faShop} size="lg" />
+              <span style={{ fontSize: "12px" }}>Request</span>
             </button>
           </Link>
           <Link to="/profile" style={{ textDecoration: "none" }}>

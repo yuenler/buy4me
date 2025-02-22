@@ -28,6 +28,16 @@ export interface Request {
   fulfillment: 'pending' | 'completed' | 'canceled' | null;
 }
 
+export interface FriendRequest {
+  // The friend request
+  id?: string;
+  initiatorId: string;
+  initiatorName: string;
+  receiverId: string;
+  receiverName: string;
+  timestamp: number | null;
+}
+
 export interface Message {
   // For messages/notifications
   id?: string;

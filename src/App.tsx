@@ -33,7 +33,9 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div
+        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+      >
         <Routes>
           {currentUser ? (
             <>

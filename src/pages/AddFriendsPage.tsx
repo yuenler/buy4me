@@ -13,6 +13,7 @@ import {
   startAt,
   endAt,
   DocumentData,
+  getDoc,
 } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
 
@@ -21,7 +22,27 @@ const AddFriendsPage: React.FC = () => {
   const [queryText, setQueryText] = useState("");
   const [results, setResults] = useState<DocumentData[]>([]);
   const [friendRequests, setFriendRequests] = useState<DocumentData[]>([]);
+  // State to store the current user's profile from Firestore
+  const [currentUserProfile, setCurrentUserProfile] =
+    useState<DocumentData | null>(null);
   const user = auth.currentUser;
+
+  // Fetch the current user's profile from Firestore so we have their username
+  useEffect(() => {
+    if (!user) return;
+    const fetchCurrentUserProfile = async () => {
+      try {
+        const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
+        if (profileDoc.exists()) {
+          setCurrentUserProfile(profileDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching current user profile:", error);
+      }
+    };
+
+    fetchCurrentUserProfile();
+  }, [user]);
 
   // Fetch profiles based on a partial (prefix) search
   useEffect(() => {
@@ -79,7 +100,8 @@ const AddFriendsPage: React.FC = () => {
   }, [user]);
 
   // Toggle friend request: send a new request or cancel an existing one.
-  const toggleFriendRequest = async (friendUid: string) => {
+  // Accepts friendName as a parameter to include the receiver's name.
+  const toggleFriendRequest = async (friendUid: string, friendName: string) => {
     if (!user) {
       alert("Please sign in first");
       return;
@@ -108,11 +130,15 @@ const AddFriendsPage: React.FC = () => {
         alert("Failed to cancel friend request");
       }
     } else {
-      // Send a new friend request
+      // Send a new friend request including sender and receiver names
       try {
+        const initiatorName =
+          currentUserProfile?.username || user.displayName || "Unknown";
         const docRef = await addDoc(collection(firestore, "friend_requests"), {
           receiverId: friendUid,
+          receiverName: friendName,
           initiatorId: user.uid,
+          initiatorName: initiatorName,
           status: "pending",
           timestamp: Date.now(),
         });
@@ -121,7 +147,9 @@ const AddFriendsPage: React.FC = () => {
           {
             id: docRef.id,
             receiverId: friendUid,
+            receiverName: friendName,
             initiatorId: user.uid,
+            initiatorName: initiatorName,
             status: "pending",
             timestamp: Date.now(),
           },
@@ -175,7 +203,9 @@ const AddFriendsPage: React.FC = () => {
                 </button>
               ) : (
                 <button
-                  onClick={() => toggleFriendRequest(profile.uid)}
+                  onClick={() =>
+                    toggleFriendRequest(profile.uid, profile.username)
+                  }
                   className={`px-4 py-2 rounded ${
                     isRequested
                       ? "bg-gray-500 text-white"

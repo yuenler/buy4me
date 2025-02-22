@@ -14,7 +14,7 @@ const SignInPage: React.FC = () => {
   const handleSignIn = async () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/home"); // Redirect after signing in
+      navigate("/"); // Redirect after signing in
     } catch (error) {
       console.error("Error signing in:", error);
       alert(`Sign in failed: ${error}`);

@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import SignUpPage from './pages/SignUpPage';
-import SignInPage from './pages/SigninPage';
-import ProfilePage from './pages/ProfilePage';
-import AddFriendsPage from './pages/AddFriendsPage';
-import NotificationsPage from './pages/NotificationsPage';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBagShopping, faHandHoldingHeart, faUser } from '@fortawesome/free-solid-svg-icons';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase';
+import React, { useState, useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import SignUpPage from "./pages/SignUpPage";
+import SignInPage from "./pages/SignInPage";
+import ProfilePage from "./pages/ProfilePage";
+import AddFriendsPage from "./pages/AddFriendsPage";
+import NotificationsPage from "./pages/NotificationsPage";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBagShopping, faHandHoldingHeart, faUser } from "@fortawesome/free-solid-svg-icons";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./firebase";
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -33,9 +33,7 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div
-        style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-      >
+      <div className="flex flex-col min-h-screen">
         <Routes>
           {currentUser ? (
             <>
@@ -50,35 +48,20 @@ const App: React.FC = () => {
             <Route path="/*" element={<SignInPage />} />
           )}
         </Routes>
+
         {currentUser && (
-          <nav style={{
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            display: 'flex',
-            justifyContent: 'space-around',
-            padding: '10px',
-            borderTop: '1px solid #ccc',
-            backgroundColor: '#fff',
-          }}>
-            <Link to="/notifications" style={{ textDecoration: 'none' }}>
-              <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-                <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
-                <span style={{ fontSize: '12px' }}>Help</span>
-              </button>
+          <nav className="fixed bottom-0 left-0 right-0 bg-white flex justify-center gap-10 py-4 border-t border-[#D1D1D1]">
+            <Link to="/notifications" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
+              <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
+              <span className="text-sm mt-1">Help</span>
             </Link>
-            <Link to="/" style={{ textDecoration: 'none' }}>
-              <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-                <FontAwesomeIcon icon={faBagShopping} size="lg" />
-                <span style={{ fontSize: '12px' }}>Shop</span>
-              </button>
+            <Link to="/" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
+              <FontAwesomeIcon icon={faBagShopping} size="lg" />
+              <span className="text-sm mt-1">Shop</span>
             </Link>
-            <Link to="/profile" style={{ textDecoration: 'none' }}>
-              <button style={{ background: 'none', border: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '10px' }}>
-                <FontAwesomeIcon icon={faUser} size="lg" />
-                <span style={{ fontSize: '12px' }}>Profile</span>
-              </button>
+            <Link to="/profile" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
+              <FontAwesomeIcon icon={faUser} size="lg" />
+              <span className="text-sm mt-1">Profile</span>
             </Link>
           </nav>
         )}

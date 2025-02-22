@@ -1,21 +1,23 @@
-// src/pages/NotificationsPage.tsx
 import React from 'react';
 import { auth } from '../firebase';
 
 const NotificationsPage: React.FC = () => {
   const user = auth.currentUser;
   if (!user) {
-    return <div>Please sign in to view Notifications.</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F2E8CF] text-[#386641]">
+        <h2>Please sign in to view Notifications.</h2>
+      </div>
+    );
   }
 
-  // In a real app, fetch notifications from Firebase.
+  // Simulated notifications data
   const notifications = [
     { id: '1', type: 'requestReceived', items: 'Bananas, Milk', sender: 'Alice' },
     { id: '2', type: 'requestSent', items: 'Bread, Eggs', recipient: 'Bob' },
   ];
 
   const handlePurchased = (notificationId: string) => {
-    // Call the serverless endpoint to verify the purchase and calculate amount.
     fetch('/api/verifyPurchase', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -36,27 +38,28 @@ const NotificationsPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <h2 className="text-center text-2xl mb-6">Notifications</h2>
-      <ul className="space-y-4">
+    <div className="min-h-screen bg-[#F2E8CF] flex flex-col items-center p-6 text-[#386641]">
+      <h2 className="text-4xl font-extrabold text-center mb-8">Notifications</h2>
+
+      <ul className="w-full max-w-lg space-y-4">
         {notifications.map((notif) => (
-          <li key={notif.id} className="bg-white p-4 rounded shadow">
+          <li key={notif.id} className="bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957]">
             {notif.type === 'requestReceived' ? (
               <>
-                <p>
-                  Request from {notif.sender} for: {notif.items}
-                </p>
+                <p className="font-medium">Request from <span className="font-bold">{notif.sender}</span> for:</p>
+                <p className="text-[#6A994E] font-semibold">{notif.items}</p>
                 <button
                   onClick={() => handlePurchased(notif.id)}
-                  className="mt-2 bg-green-500 text-white px-4 py-2 rounded"
+                  className="mt-4 bg-[#6A994E] hover:bg-[#386641] text-white font-semibold py-2 px-4 rounded shadow-md"
                 >
                   Purchased
                 </button>
               </>
             ) : (
-              <p>
-                Request sent to {notif.recipient} for: {notif.items}
-              </p>
+              <>
+                <p className="font-medium">Request sent to <span className="font-bold">{notif.recipient}</span> for:</p>
+                <p className="text-[#6A994E] font-semibold">{notif.items}</p>
+              </>
             )}
           </li>
         ))}

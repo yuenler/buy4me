@@ -3,6 +3,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import SignUpPage from './pages/SignUpPage';
+import SignInPage from './pages/SigninPage';
 import ProfilePage from './pages/ProfilePage';
 import AddFriendsPage from './pages/AddFriendsPage';
 import NotificationsPage from './pages/NotificationsPage';
@@ -15,6 +16,7 @@ const App: React.FC = () => {
       <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <Routes>
           <Route path="/signup" element={<SignUpPage />} />
+          <Route path="/signin" element={<SignInPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/add-friends" element={<AddFriendsPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />

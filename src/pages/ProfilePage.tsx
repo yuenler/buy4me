@@ -20,7 +20,7 @@ const ProfilePage: React.FC = () => {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigate('/signup'); // ✅ Replaces history.push('/signup')
+      navigate('/signup');
     } catch (error) {
       console.error("Error logging out:", error);
     }

@@ -8,7 +8,7 @@ import ProfilePage from './pages/ProfilePage';
 import AddFriendsPage from './pages/AddFriendsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBagShopping, faBell, faHandHoldingHeart, faHome, faShoppingCart, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faBagShopping, faHandHoldingHeart, faUser } from '@fortawesome/free-solid-svg-icons';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 

@@ -28,7 +28,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const response = await client.linkTokenCreate({
       user: { client_user_id: userId }, // Use dynamic userId
       client_name: 'buy4me?',
+      // @ts-ignore
       products: ['transactions'],
+      // @ts-ignore
       country_codes: ['US'],
       language: 'en',
     });

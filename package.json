@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
     "@types/node": "^16.18.126",
+    "@vercel/node": "^5.1.8",
     "axios": "^1.7.9",
     "firebase": "^11.3.1",
     "firebase-admin": "^13.1.0",

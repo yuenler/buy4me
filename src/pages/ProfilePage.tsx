@@ -11,27 +11,37 @@ import {
   updateDoc,
   arrayUnion,
   DocumentData,
+  getDoc,
 } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const user = auth.currentUser;
 
-  // For demonstration purposes, using a static profile.
-  // In a real app, fetch this data from Firestore.
-  const [profile, setProfile] = useState({
-    picture: "https://via.placeholder.com/150",
-    friendsCount: 5,
-    setupSteps: {
-      addFriends: true,
-      linkBank: false,
-      linkPaypal: false,
-    },
-  });
-
+  // State to store the current user's profile from Firestore
+  const [profile, setProfile] = useState<DocumentData | null>(null);
   // State for incoming friend requests
   const [incomingRequests, setIncomingRequests] = useState<DocumentData[]>([]);
+
+  // Fetch the current user's profile from Firestore
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      try {
+        const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
+        if (profileDoc.exists()) {
+          setProfile(profileDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   // Fetch incoming friend requests for the current user
   useEffect(() => {
@@ -67,27 +77,30 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  // Accept a friend request by updating your profile in Firestore
-  // and then deleting the request from "friend_requests"
+  // Accept a friend request by updating the current user's profile friend list
+  // and then deleting the friend request from Firestore
   const acceptFriendRequest = async (
     requestId: string,
     initiatorId: string
   ) => {
     if (!user) return;
     try {
-      // Update the current user's profile document to add the new friend.
-      // This assumes your profile document contains a "friends" array.
+      // Update the profile document to add the new friend (using arrayUnion)
       await updateDoc(doc(firestore, "profiles", user.uid), {
         friends: arrayUnion(initiatorId),
       });
 
-      // Optionally, you might want to update your local profile state here.
-
-      // Remove the friend request from Firestore
+      // Remove the friend request document
       await deleteDoc(doc(firestore, "friend_requests", requestId));
 
       // Remove the accepted request from the local state
       setIncomingRequests((prev) => prev.filter((req) => req.id !== requestId));
+
+      // Optionally, refetch the profile to update the friend count
+      const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
+      if (profileDoc.exists()) {
+        setProfile(profileDoc.data());
+      }
     } catch (error) {
       console.error("Error accepting friend request:", error);
       alert("Failed to accept friend request");
@@ -102,22 +115,37 @@ const ProfilePage: React.FC = () => {
     );
   }
 
+  // Compute friend count based on the "friends" array in the profile (if available)
+  const friendCount = profile && profile.friends ? profile.friends.length : 0;
+
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <div className="max-w-md mx-auto bg-white shadow-md rounded-lg p-6">
-        <img
-          src={profile.picture}
-          alt="Profile"
-          className="rounded-full w-24 h-24 mx-auto"
-        />
+        <div className="flex justify-center">
+          {profile?.picture ? (
+            <img
+              src={profile.picture}
+              alt="Profile"
+              className="rounded-full w-24 h-24"
+            />
+          ) : (
+            <div className="flex items-center justify-center w-24 h-24 bg-gray-200 rounded-full">
+              <FontAwesomeIcon
+                icon={faUser}
+                size="3x"
+                className="text-gray-500"
+              />
+            </div>
+          )}
+        </div>
         <h2 className="text-center text-2xl mt-4">Your Profile</h2>
-        <p className="text-center mt-2">Friends: {profile.friendsCount}</p>
+        <p className="text-center mt-2">Friends: {friendCount}</p>
         <div className="mt-4">
           <h3 className="font-bold">Profile Setup Status:</h3>
           <ul className="list-disc ml-6">
             <li
               className={
-                profile.setupSteps.addFriends
+                profile?.setupSteps?.addFriends
                   ? "text-green-500"
                   : "text-red-500"
               }
@@ -126,14 +154,16 @@ const ProfilePage: React.FC = () => {
             </li>
             <li
               className={
-                profile.setupSteps.linkBank ? "text-green-500" : "text-red-500"
+                profile?.setupSteps?.linkBank
+                  ? "text-green-500"
+                  : "text-red-500"
               }
             >
               Link Bank Account
             </li>
             <li
               className={
-                profile.setupSteps.linkPaypal
+                profile?.setupSteps?.linkPaypal
                   ? "text-green-500"
                   : "text-red-500"
               }
@@ -167,7 +197,6 @@ const ProfilePage: React.FC = () => {
                   key={req.id}
                   className="flex justify-between items-center bg-white p-4 mt-2 rounded shadow"
                 >
-                  {/* Display the requester’s identifier (ideally, you would display their username) */}
                   <span>{req.initiatorName}</span>
                   <button
                     onClick={() => acceptFriendRequest(req.id, req.initiatorId)}

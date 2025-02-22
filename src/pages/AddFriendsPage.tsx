@@ -16,6 +16,8 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 
 const AddFriendsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,9 +27,11 @@ const AddFriendsPage: React.FC = () => {
   // State to store the current user's profile from Firestore
   const [currentUserProfile, setCurrentUserProfile] =
     useState<DocumentData | null>(null);
+  // State to store the fetched friends
+  const [friends, setFriends] = useState<DocumentData[]>([]);
   const user = auth.currentUser;
 
-  // Fetch the current user's profile from Firestore so we have their username
+  // Fetch the current user's profile from Firestore so we have their username and friend list
   useEffect(() => {
     if (!user) return;
     const fetchCurrentUserProfile = async () => {
@@ -43,6 +47,26 @@ const AddFriendsPage: React.FC = () => {
 
     fetchCurrentUserProfile();
   }, [user]);
+
+  // Once we have the current user's profile, fetch details for each friend
+  useEffect(() => {
+    if (!currentUserProfile || !currentUserProfile.friends) return;
+    const fetchFriends = async () => {
+      try {
+        const friendIds: string[] = currentUserProfile.friends;
+        const friendDocs = await Promise.all(
+          friendIds.map((id) => getDoc(doc(firestore, "profiles", id)))
+        );
+        const friendData = friendDocs
+          .filter((docSnap) => docSnap.exists())
+          .map((docSnap) => ({ uid: docSnap.id, ...docSnap.data() }));
+        setFriends(friendData);
+      } catch (error) {
+        console.error("Error fetching friends:", error);
+      }
+    };
+    fetchFriends();
+  }, [currentUserProfile]);
 
   // Fetch profiles based on a partial (prefix) search
   useEffect(() => {
@@ -174,6 +198,42 @@ const AddFriendsPage: React.FC = () => {
       <button onClick={() => navigate(-1)} className="mb-4 text-blue-500">
         &larr; Back
       </button>
+
+      {/* Existing Friends Section */}
+
+      <div className="mb-6">
+        <h2 className="text-2xl mb-2">Your Friends</h2>
+        {friends.length > 0 ? (
+          <ul className="flex space-x-4 overflow-x-auto">
+            {friends.map((friend) => (
+              <li
+                key={friend.uid}
+                className="flex flex-col items-center bg-white p-2 rounded shadow"
+              >
+                {friend.picture ? (
+                  <img
+                    src={friend.picture}
+                    alt={friend.username}
+                    className="rounded-full w-12 h-12 mb-1"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center w-24 h-24 bg-gray-200 rounded-full">
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      size="3x"
+                      className="text-gray-500"
+                    />
+                  </div>
+                )}
+                <span className="text-sm">{friend.username}</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>You have no friends yet.</p>
+        )}
+      </div>
+
       <h2 className="text-2xl mb-4">Add Friends</h2>
       <input
         type="text"

@@ -1,11 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { auth, firestore } from "../firebase";
-import { collection, query, where, onSnapshot } from "firebase/firestore";
+import { collection, query, where, onSnapshot, DocumentData, getDoc, doc } from "firebase/firestore";
 import { Request } from "../types";
 
 const Buy4OthersPage: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
+  const [profile, setProfile] = useState<DocumentData | null>(null);
   const user = auth.currentUser;
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      try {
+        const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
+        if (profileDoc.exists()) {
+          setProfile(profileDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
@@ -25,24 +42,29 @@ const Buy4OthersPage: React.FC = () => {
     return unsubscribe;
   }, [user]);
 
-  const handlePurchased = (notificationId: string) => {
-    fetch("/api/verifyPurchase", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        transactionData: {}, // Replace with real Plaid transaction data
-        items: requests.find((n) => n.id === notificationId)?.unboughtItems,
-        paypalUsername: "recipientUsername", // Replace with actual PayPal username
-      }),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.verified) {
-          alert(`Purchase verified. Suggested PayPal amount: $${data.suggestedPrice}`);
-        } else {
-          alert("Purchase could not be verified.");
-        }
+  const handlePurchased = async (notificationId: string) => {
+    try {
+      const response = await fetch("/api/verifyPurchase", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          items: requests.find((n) => n.id === notificationId)?.text,
+          plaidAccessToken: profile?.plaidAccessToken,
+        }),
       });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (data.verified) {
+        alert(`Purchase verified. Suggested PayPal amount: $${data.reimburseAmount}`);
+      } else {
+        alert("Purchase could not be verified.");
+      }
+    } catch (error) {
+      console.error("Error verifying purchase:", error);
+      alert("Error verifying purchase. Please try again.");
+    }
   };
 
   const pendingRequests = requests.filter((r) => r.fulfillment === "pending");

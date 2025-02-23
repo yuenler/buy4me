@@ -59,7 +59,7 @@ const SignUpPage: React.FC = () => {
     <div className="min-h-screen bg-[#F2E8CF] flex flex-col items-center justify-center p-4 pb-20">
       <div className="mb-8 text-center">
         <h1 className="text-5xl font-extrabold text-[#386641] drop-shadow-lg">
-          Buy4Me
+          buy4me?
         </h1>
         <p className="mt-2 text-lg text-[#6A994E]">
           Get your friends to buy stuff for you.

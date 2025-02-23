@@ -361,10 +361,21 @@ const Buy4OthersPage: React.FC = () => {
                             Venmo request ${request.reimburseAmount}
                           </div>
                           <div className="text-xs">
-                            The estimated cost of the requested items
+                            {request.fullPrice !== request.reimburseAmount ? (
+                              <div>
+                                The estimated cost of the requested items
+                              </div>
+                            ) : (
+                              <div>
+                                The total cost of your transaction at{" "}
+                                {request.purchaseLocation}
+                              </div>
+                            )
+                          }
                           </div>
                         </button>
                         {isVerified && (
+                        request.fullPrice !== request.reimburseAmount &&
                           <button
                             onClick={() =>
                               handleSendVenmoRequest(

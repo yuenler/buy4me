@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
     const transactions = transactionsResponse.data.transactions;
 
-    // console.log(transactions);  
+    console.log(transactions);  
 
     // Construct the prompt for OpenAI
     const prompt = `

@@ -18,7 +18,6 @@ import { PlaidLink } from "react-plaid-link";
 import axios from "axios";
 import { DocumentData } from "firebase/firestore";
 
-
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const user = auth.currentUser;
@@ -53,10 +52,7 @@ const ProfilePage: React.FC = () => {
     const fetchIncomingRequests = async () => {
       try {
         const friendRequestsRef = collection(firestore, "friend_requests");
-        const q = query(
-          friendRequestsRef,
-          where("receiverId", "==", user.uid),
-        );
+        const q = query(friendRequestsRef, where("receiverId", "==", user.uid));
         const snapshot = await getDocs(q);
         const requests = snapshot.docs.map((doc) => ({
           id: doc.id,
@@ -75,19 +71,18 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     const fetchLinkToken = async () => {
       try {
-        const user = auth.currentUser;
-        if (!user) throw new Error("User not authenticated");
-    
+        const currentUser = auth.currentUser;
+        if (!currentUser) throw new Error("User not authenticated");
+
         const response = await axios.post("/api/createLinkToken", {
-          userId: user.uid, // Send user ID in the request body
+          userId: currentUser.uid, // Send user ID in the request body
         });
-    
+
         setLinkToken(response.data.link_token);
       } catch (error) {
         console.error("Error fetching link token:", error);
       }
     };
-    
 
     fetchLinkToken();
   }, []);
@@ -102,10 +97,7 @@ const ProfilePage: React.FC = () => {
   };
 
   // Accept a friend request
-  const acceptFriendRequest = async (
-    requestId: string,
-    initiatorId: string
-  ) => {
+  const acceptFriendRequest = async (requestId: string, initiatorId: string) => {
     if (!user) return;
     try {
       // Update the profile document to add the new friend
@@ -156,6 +148,15 @@ const ProfilePage: React.FC = () => {
       }
     } catch (error) {
       console.error("Error exchanging public token:", error);
+    }
+  };
+
+  // Handler for when the Plaid Link flow exits (either with or without an error)
+  const handleOnExit = (error: any, metadata: any) => {
+    if (error) {
+      console.error("Plaid Link exited with error:", error);
+    } else {
+      console.log("Plaid Link exited without error.", metadata);
     }
   };
 
@@ -214,24 +215,15 @@ const ProfilePage: React.FC = () => {
             <PlaidLink
               token={linkToken}
               onSuccess={handleOnSuccess}
+              onExit={handleOnExit}
             >
-              {/* @ts-ignore */}
-              {(props: Parameters<PlaidLinkProps["children"]>[0]) => (
-                <button
-                  // @ts-ignore
-                  onClick={props.open}
-                  className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-                >
-                  {profile?.setupSteps?.linkBank ? "Bank Account Linked" : "Connect Bank Account"}
-                </button>
-              )}
+              {profile?.setupSteps?.linkBank ? "Bank Account Linked" : "Connect Bank Account"}
             </PlaidLink>
           ) : (
             <button className="w-full bg-gray-300 text-white py-2 px-4 rounded" disabled>
               Loading...
             </button>
           )}
-
         </div>
 
         <button

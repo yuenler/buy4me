@@ -28,7 +28,6 @@ const ProfilePage: React.FC = () => {
 
   // States for Plaid integration
   const [linkToken, setLinkToken] = useState<string | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   // Fetch the current user's profile from Firestore
   useEffect(() => {
@@ -134,11 +133,12 @@ const ProfilePage: React.FC = () => {
       const response = await axios.post("/api/exchangePublicToken", {
         public_token,
       });
-      setAccessToken(response.data.access_token);
+      
       // Optionally, update the user's profile to reflect that the bank account is linked.
       if (user) {
         await updateDoc(doc(firestore, "profiles", user.uid), {
           linkedBank: true,
+          plaidAccessToken: response.data.access_token,
         });
         // Refetch profile
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));

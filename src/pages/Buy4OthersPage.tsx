@@ -156,10 +156,51 @@ const Buy4OthersPage: React.FC = () => {
   // Completed requests (for sending Venmo requests) are those with fulfillment === "completed".
   const pastRequests = requests.filter((r) => r.fulfillment === "completed");
 
+  const [locationSharedAt, setLocationSharedAt] = useState<Date | null>(null);
+
+  const handleShareMyLocation = async () => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      alert("User not logged in.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        try {
+          await updateDoc(doc(firestore, "profiles", currentUser.uid), {
+            location: { latitude, longitude },
+          });
+          setLocationSharedAt(new Date());
+        } catch (error) {
+          console.error("Error updating location:", error);
+          alert("Failed to update location.");
+        }
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Failed to retrieve location.");
+      }
+    );
+  };
+  
+
   return (
     <div className="min-h-screen bg-[#F2E8CF] p-6 flex justify-center">
       <div className="w-full max-w-lg text-[#386641]">
-        <h1 className="text-4xl font-extrabold text-center mb-8">buy4others?</h1>
+        <h1 className="text-4xl font-extrabold text-center mb-6">buy4others?</h1>
+        <div className="flex flex-col items-center justify-center space-y-2 mt-4">
+          <button
+            onClick={handleShareMyLocation}
+            className="bg-[#386641] text-white font-semibold px-4 py-2 rounded-lg hover:bg-[#6A994E] transition-colors duration-300"
+          >
+            Share My Location
+          </button>
+          <p className="text-center text-xs text-[#6A994E]">
+            {locationSharedAt ? `Location shared at ${locationSharedAt.toLocaleTimeString()}` : " "}
+          </p>
+        </div>
 
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (

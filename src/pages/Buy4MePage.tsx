@@ -117,7 +117,7 @@ const Buy4MePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F2E8CF] p-6 flex justify-center">
       <div className="w-full max-w-lg text-[#386641]">
-        <h1 className="text-4xl font-extrabold text-center mb-8">buy4me?</h1>
+        <h1 className="text-4xl font-extrabold text-center mb-6">buy4me?</h1>
 
         {/* 🛒 Request Section */}
         <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-4 border-[#A7C957]">

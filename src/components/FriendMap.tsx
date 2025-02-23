@@ -153,7 +153,7 @@ const FriendMap: React.FC = () => {
         resolve([...supermarkets, ...restaurants]); // Merge results
       });
     });
-  };
+  };  
 
   return (
     <div className="min-h-screen bg-[#F2E8CF] p-6 flex flex-col items-center">

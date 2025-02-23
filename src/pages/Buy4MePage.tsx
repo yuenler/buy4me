@@ -11,7 +11,6 @@ import {
 import { firestore, auth } from '../firebase';
 import FriendModal from '../components/FriendModal';
 import { Request, Friend, Profile } from '../types';
-import FriendMap from '../components/FriendMap';
 
 const Buy4MePage: React.FC = () => {
   const user = auth.currentUser;

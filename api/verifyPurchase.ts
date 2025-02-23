@@ -57,12 +57,13 @@ Analyze the transactions to determine if a purchase matching the request was mad
 (the purchase spending amount should be greater than or equal to the expected amount).
 
 If you see a matching transaction from that place, but the dollar amount seems unreasonably high, 
-the reimbursement amount should be what you think is reasonable given the request.
+the reimbursement amount should be what you think is reasonable given the request, otherwise
+the full amount should be used.
 If a matching transaction is found, return a JSON object with:
 {
   "purchaseMade": true,
   "fullAmount": <the dollar amount from the transaction, as recorded on Plaid>,
-  "reimburseAmount": <the dollar amount from the transaction, adjusted if it seems unreasonable>,
+  "reimburseAmount": <the dollar amount from the transaction, adjusted if it seems unreasonable, otherwise should match full amount>,
   "purchaseLocation": <the place where the purchase was made, e.g. 'Star market', 'Costco'>
   "requestTextSummary": <a very short 2-3 word description of the purchase request to be used on venmo>
 }

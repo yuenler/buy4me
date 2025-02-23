@@ -84,6 +84,7 @@ const Buy4MePage: React.FC = () => {
         timestamp: Date.now(),
         unboughtItems: [],
         fulfillment: 'pending',
+        payPalRequestSent: false,
       };
 
       const docRef = await addDoc(collection(firestore, 'requests'), newRequest);

@@ -23,10 +23,13 @@ export interface Request {
   requesterId: string | null;
   requesterUsername: string | null;
   text: string | null;
-  fullPrice: number | null;
   timestamp: number | null;
   unboughtItems: string[] | null;
   fulfillment: 'pending' | 'completed' | 'canceled' | null;
+  fullPrice?: number | null;
+  reimburseAmount?: number | null;
+  purchaseLocation?: string | null;
+  payPalRequestSent: boolean;
 }
 
 export interface FriendRequest {

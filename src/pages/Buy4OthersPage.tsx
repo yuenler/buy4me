@@ -196,15 +196,10 @@ const Buy4OthersPage: React.FC = () => {
                     )}
                     {status === "notVerified" && (
                       <div className="mt-3 space-y-2">
+                        <div className="text-xs font-semibold">
+                          We could not find your transaction from your bank account data.
+                        </div>
                         <div className="flex flex-wrap gap-2">
-                          <button
-                            disabled
-                            className="w-full bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg text-left"
-                          >
-                            <div className="text-sm font-bold">
-                              We could not verify your transaction from your bank account data
-                            </div>
-                          </button>
                           {/* Conditionally render Venmo request buttons */}
                           {request.fullPrice === request.reimburseAmount ? (
                             <button
@@ -305,69 +300,50 @@ const Buy4OthersPage: React.FC = () => {
                       </p>
                     ) : (
                       <div className="mt-2 space-y-2">
-                        {request.fullPrice === request.reimburseAmount || !isVerified ? (
+                        {!isVerified && (
+                          <p className="font-semibold text-xs">
+                            We could not find your transaction from your bank account data.
+                          </p>
+                        )}
+                        <button
+                          onClick={() =>
+                            handleSendVenmoRequest(
+                              request.id!,
+                              request.reimburseAmount!,
+                              request.venmoAccountToRequestFrom ?? "",
+                              request.requestTextSummary ?? ""
+                            )
+                          }
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
+                        >
+                          <div className="text-lg font-bold">
+                            Venmo request ${request.reimburseAmount}
+                          </div>
+                          <div className="text-xs">
+                            The estimated cost of the requested items
+                          </div>
+                        </button>
+                        {isVerified && (
                           <button
                             onClick={() =>
                               handleSendVenmoRequest(
                                 request.id!,
-                                request.reimburseAmount!,
+                                request.fullPrice!,
                                 request.venmoAccountToRequestFrom ?? "",
                                 request.requestTextSummary ?? ""
                               )
                             }
-                            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
+                            className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
                             <div className="text-lg font-bold">
-                              Venmo request ${request.reimburseAmount}
+                              Venmo request ${request.fullPrice}
                             </div>
                             <div className="text-xs">
                               The total cost of your transaction at{" "}
                               {request.purchaseLocation}
                             </div>
                           </button>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() =>
-                                handleSendVenmoRequest(
-                                  request.id!,
-                                  request.reimburseAmount!,
-                                  request.venmoAccountToRequestFrom ?? "",
-                                  request.requestTextSummary ?? ""
-                                )
-                              }
-                              className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
-                            >
-                              <div className="text-lg font-bold">
-                                Venmo request ${request.reimburseAmount}
-                              </div>
-                              <div className="text-xs">
-                                The estimated cost of the requested items
-                              </div>
-                            </button>
-                            {isVerified && (
-                              <button
-                                onClick={() =>
-                                  handleSendVenmoRequest(
-                                    request.id!,
-                                    request.fullPrice!,
-                                    request.venmoAccountToRequestFrom ?? "",
-                                    request.requestTextSummary ?? ""
-                                  )
-                                }
-                                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
-                              >
-                                <div className="text-lg font-bold">
-                                  Venmo request ${request.fullPrice}
-                                </div>
-                                <div className="text-xs">
-                                  The total cost of your transaction at{" "}
-                                  {request.purchaseLocation}
-                                </div>
-                              </button>
-                            )}
-                          </>
-                        )}
+                        ) }
                         <button
                           onClick={() =>
                             openCustomAmountModal(
@@ -394,6 +370,7 @@ const Buy4OthersPage: React.FC = () => {
             </ul>
           </section>
         )}
+
 
         {/* No Requests */}
         {requests.length === 0 && (

@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
     const transactions = transactionsResponse.data.transactions;
 
-    console.log(transactions);  
+    // console.log(transactions);  
 
     // Construct the prompt for OpenAI
     const prompt = `
@@ -56,7 +56,7 @@ The purchase request is: "${items}".
 Analyze the transactions to determine if a purchase matching the request was made 
 (the purchase spending amount should be greater than or equal to the expected amount).
 
-If you see a matching transaction, but the dollar amount seems unreasonably high, 
+If you see a matching transaction from that place, but the dollar amount seems unreasonably high, 
 the reimbursement amount should be what you think is reasonable given the request.
 If a matching transaction is found, return a JSON object with:
 {
@@ -133,6 +133,8 @@ If multiple matching transactions exist, use the most recent one that satisfies 
         aiText,
       });
     }
+
+    console.log(result);
 
     return res.status(200).json(result);
 

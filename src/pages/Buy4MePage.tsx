@@ -178,7 +178,7 @@ const Buy4MePage: React.FC = () => {
             requests
               .filter((r) => r.fulfillment !== 'pending')
               .map((req) => (
-                <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm">
+                <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm mt-2">
                   <p className="font-medium">{req.buyerUsername}</p>
                   <p className="text-sm">{req.text}</p>
                 </div>

@@ -183,7 +183,7 @@ const FriendMap: React.FC = () => {
           )}
         </div>
 
-        <LoadScript googleMapsApiKey="AIzaSyC44tWWL0aaZOV_UCjeo8Qf7vFZXI6XHVE" libraries={["places"]}>
+        
           {userLocation ? (
             <GoogleMap key={`${userLocation.lat}-${userLocation.lng}`} mapContainerStyle={mapContainerStyle} center={userLocation} zoom={13}>
               <Circle center={userLocation} radius={150} options={{ strokeColor: "#6A994E", fillColor: "#6A994E", strokeWeight: 1.5 }} />
@@ -200,7 +200,7 @@ const FriendMap: React.FC = () => {
           ) : (
             <p className="text-center text-gray-700">Loading map...</p>
           )}
-        </LoadScript>
+
       </div>
     </div>
   );

@@ -11,6 +11,7 @@ import { faBagShopping, faHandHoldingHeart, faUser } from "@fortawesome/free-sol
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import FriendMapPage from "./pages/FriendMapPage";
+import { LoadScript } from "@react-google-maps/api";
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -33,6 +34,7 @@ const App: React.FC = () => {
   }
 
   return (
+    <LoadScript googleMapsApiKey="AIzaSyC44tWWL0aaZOV_UCjeo8Qf7vFZXI6XHVE" libraries={["places"]}>
     <Router>
       <div className="flex flex-col min-h-screen">
       <Routes>
@@ -78,6 +80,7 @@ const App: React.FC = () => {
         )}
       </div>
     </Router>
+    </LoadScript>
   );
 };
 

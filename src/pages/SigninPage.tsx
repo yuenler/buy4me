@@ -56,6 +56,7 @@ const SignInPage: React.FC = () => {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#386641]"
+            style={{ top: "-20%" }}
           >
             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
           </button>
@@ -71,7 +72,10 @@ const SignInPage: React.FC = () => {
         <div className="mt-4 text-center">
           <p>
             Don't have an account?{" "}
-            <Link to="/signup" className="text-[#BC4749] hover:underline font-bold">
+            <Link
+              to="/signup"
+              className="text-[#BC4749] hover:underline font-bold"
+            >
               Sign Up
             </Link>
           </p>

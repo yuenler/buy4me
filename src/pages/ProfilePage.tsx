@@ -138,7 +138,7 @@ const ProfilePage: React.FC = () => {
       // Optionally, update the user's profile to reflect that the bank account is linked.
       if (user) {
         await updateDoc(doc(firestore, "profiles", user.uid), {
-          "setupSteps.linkBank": true,
+          linkedBank: true,
         });
         // Refetch profile
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
@@ -198,10 +198,10 @@ const ProfilePage: React.FC = () => {
             <li className={(profile?.friends?.length > 1) ? "text-green-600" : "text-red-500"}>
               Add Friends
             </li>
-            <li className={profile?.setupSteps?.linkBank ? "text-green-600" : "text-red-500"}>
+            <li className={profile?.linkedBank ? "text-green-600" : "text-red-500"}>
               Link Bank Account
             </li>
-            <li className={profile?.setupSteps?.linkPaypal ? "text-green-600" : "text-red-500"}>
+            <li className={profile?.linkedPaypal ? "text-green-600" : "text-red-500"}>
               Link PayPal
             </li>
           </ul>
@@ -217,7 +217,7 @@ const ProfilePage: React.FC = () => {
               onSuccess={handleOnSuccess}
               onExit={handleOnExit}
             >
-              {profile?.setupSteps?.linkBank ? "Bank Account Linked" : "Connect Bank Account"}
+              {profile?.linkedBank ? "Bank Account Linked" : "Connect Bank Account"}
             </PlaidLink>
           ) : (
             <button className="w-full bg-gray-300 text-white py-2 px-4 rounded" disabled>

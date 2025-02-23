@@ -245,25 +245,7 @@ const Buy4OthersPage: React.FC = () => {
                                 <div className="text-xs">
                                   The estimated cost of the requested items
                                 </div>
-                              </button>
-                              <button
-                                onClick={() =>
-                                  handleSendVenmoRequest(
-                                    request.id!,
-                                    request.fullPrice!,
-                                    request.venmoAccountToRequestFrom ?? "",
-                                    request.requestTextSummary ?? ""
-                                  )
-                                }
-                                className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
-                              >
-                                <div className="text-lg font-bold">
-                                  Venmo request ${request.fullPrice}
-                                </div>
-                                <div className="text-xs">
-                                  The total cost of your transaction at {request.purchaseLocation}
-                                </div>
-                              </button>
+                              </button> 
                             </>
                           )}
                           <button

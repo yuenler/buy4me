@@ -7,7 +7,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AddFriendsPage from "./pages/AddFriendsPage";
 import Buy4OthersPage from "./pages/Buy4OthersPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBagShopping, faHandHoldingHeart, faUser } from "@fortawesome/free-solid-svg-icons";
+import { faBagShopping, faHandHoldingHeart, faMap, faUser } from "@fortawesome/free-solid-svg-icons";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
 import FriendMapPage from "./pages/FriendMapPage";
@@ -68,7 +68,7 @@ const App: React.FC = () => {
               <span className="text-sm mt-1">buy4me</span>
             </Link>
             <Link to="/friendmap" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
-              <FontAwesomeIcon icon={faBagShopping} size="lg" />
+              <FontAwesomeIcon icon={faMap} size="lg" />
               <span className="text-sm mt-1">friendmap</span>
             </Link>
             <Link to="/profile" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">

@@ -13,7 +13,7 @@ import {
 } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { PlaidLink } from "react-plaid-link";
 import axios from "axios";
 import { DocumentData } from "firebase/firestore";
@@ -22,14 +22,18 @@ const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const user = auth.currentUser;
 
-  // State for Firestore profile and friend requests
+  // Firestore profile & friend requests state
   const [profile, setProfile] = useState<DocumentData | null>(null);
   const [incomingRequests, setIncomingRequests] = useState<DocumentData[]>([]);
 
-  // States for Plaid integration
+  // Plaid link token
   const [linkToken, setLinkToken] = useState<string | null>(null);
 
-  // Fetch the current user's profile from Firestore
+  // PayPal modal state
+  const [showPayPalModal, setShowPayPalModal] = useState(false);
+  const [paypalEmail, setPaypalEmail] = useState("");
+
+  // Fetch current user's profile from Firestore
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
@@ -46,6 +50,7 @@ const ProfilePage: React.FC = () => {
     fetchProfile();
   }, [user]);
 
+  // Fetch incoming friend requests
   useEffect(() => {
     if (!user) return;
     const fetchIncomingRequests = async () => {
@@ -66,17 +71,14 @@ const ProfilePage: React.FC = () => {
     fetchIncomingRequests();
   }, [user]);
 
-  // Fetch Plaid Link Token on component mount
+  // Fetch Plaid Link Token on mount
   useEffect(() => {
     const fetchLinkToken = async () => {
       try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) throw new Error("User not authenticated");
-
+        if (!user) throw new Error("User not authenticated");
         const response = await axios.post("/api/createLinkToken", {
-          userId: currentUser.uid, // Send user ID in the request body
+          userId: user.uid,
         });
-
         setLinkToken(response.data.link_token);
       } catch (error) {
         console.error("Error fetching link token:", error);
@@ -84,8 +86,9 @@ const ProfilePage: React.FC = () => {
     };
 
     fetchLinkToken();
-  }, []);
+  }, [user]);
 
+  // Logout handler (still rendered inside the main container)
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -99,24 +102,17 @@ const ProfilePage: React.FC = () => {
   const acceptFriendRequest = async (requestId: string, initiatorId: string) => {
     if (!user) return;
     try {
-      // Update the profile document to add the new friend
       await updateDoc(doc(firestore, "profiles", user.uid), {
         friends: arrayUnion(initiatorId),
       });
-
       const initiatorRef = doc(firestore, "profiles", initiatorId);
-
       await updateDoc(initiatorRef, {
         friends: arrayUnion(user.uid),
       });
-
       await deleteDoc(doc(firestore, "friend_requests", requestId));
+      setIncomingRequests((prev) => prev.filter((req) => req.id !== requestId));
 
-      // Update local state
-      setIncomingRequests((prev) =>
-        prev.filter((req) => req.id !== requestId)
-      );
-
+      // Refetch profile
       const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
       if (profileDoc.exists()) {
         setProfile(profileDoc.data());
@@ -127,20 +123,17 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  // Handler for successful bank account connection via Plaid Link
+  // Plaid Link success and exit handlers
   const handleOnSuccess = async (public_token: string, metadata: any) => {
     try {
       const response = await axios.post("/api/exchangePublicToken", {
         public_token,
       });
-      
-      // Optionally, update the user's profile to reflect that the bank account is linked.
       if (user) {
         await updateDoc(doc(firestore, "profiles", user.uid), {
           linkedBank: true,
           plaidAccessToken: response.data.access_token,
         });
-        // Refetch profile
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
         if (profileDoc.exists()) {
           setProfile(profileDoc.data());
@@ -151,12 +144,31 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  // Handler for when the Plaid Link flow exits (either with or without an error)
   const handleOnExit = (error: any, metadata: any) => {
     if (error) {
       console.error("Plaid Link exited with error:", error);
     } else {
       console.log("Plaid Link exited without error.", metadata);
+    }
+  };
+
+  // Handler for PayPal submission
+  const handlePayPalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    try {
+      await updateDoc(doc(firestore, "profiles", user.uid), {
+        linkedPaypal: true,
+        paypal: paypalEmail,
+      });
+      const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
+      if (profileDoc.exists()) {
+        setProfile(profileDoc.data());
+      }
+      setShowPayPalModal(false);
+    } catch (error) {
+      console.error("Error linking PayPal:", error);
+      alert("Failed to link PayPal");
     }
   };
 
@@ -173,7 +185,16 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F2E8CF] flex flex-col items-center p-4">
       <div className="w-full max-w-md bg-white shadow-lg rounded-xl p-6 border-4 border-[#A7C957]">
-        <div className="flex justify-center">
+        {/* Logout button inside the white container */}
+        <div className="flex justify-end">
+          <button
+            onClick={handleLogout}
+            className="bg-[#BC4749] hover:bg-red-700 text-white px-2 py-1 rounded text-sm"
+          >
+            Logout
+          </button>
+        </div>
+        <div className="flex flex-col items-center">
           {profile?.picture ? (
             <img
               src={profile.picture}
@@ -185,60 +206,98 @@ const ProfilePage: React.FC = () => {
               <FontAwesomeIcon icon={faUser} size="3x" className="text-white" />
             </div>
           )}
+          <h2 className="text-center text-2xl text-[#386641] mt-4 font-bold">
+            {profile?.username}
+          </h2>
+          {/* Friend count as bold, underlined, and clickable */}
+          <button
+            onClick={() => navigate("/add-friends")}
+            className="text-center mt-2 font-bold underline text-[#6A994E]"
+          >
+            {friendCount} {friendCount === 1 ? "friend" : "friends"}
+          </button>
         </div>
 
-        <h2 className="text-center text-2xl text-[#386641] mt-4 font-bold">
-          {profile?.username}
-        </h2>
-        <p className="text-center text-[#6A994E] mt-2">Friends: {friendCount}</p>
-
-        <div className="mt-4">
-          <h3 className="font-bold text-[#6A994E]">Profile Setup Status:</h3>
-          <ul className="list-disc ml-6 text-[#386641]">
-            <li className={(profile?.friends?.length > 1) ? "text-green-600" : "text-red-500"}>
-              Add Friends
-            </li>
-            <li className={profile?.linkedBank ? "text-green-600" : "text-red-500"}>
-              Link Bank Account
-            </li>
-            <li className={profile?.linkedPaypal ? "text-green-600" : "text-red-500"}>
-              Link PayPal
-            </li>
-          </ul>
-        </div>
-
-        {/* Bank Account Connection Section */}
+        {/* Profile Setup Tasks */}
         <div className="mt-6">
-          <h3 className="font-bold text-lg mb-2">Bank Account</h3>
+          <h3 className="font-bold text-[#6A994E] mb-4">
+            Profile Setup
+          </h3>
+          <div className="grid grid-cols-1 gap-4">
+            {/* Add Friends Task */}
+            <div className="border rounded-lg p-4 flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-[#386641]">Add Friends</p>
+                {friendCount > 0 && (
+                  <div className="flex items-center text-green-600">
+                    <FontAwesomeIcon icon={faCheck} />{" "}
+                    <span className="ml-2">Completed</span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => navigate("/add-friends")}
+                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm"
+              >
+                {friendCount > 0 ? "Add More Friends" : "Add Friends"}
+              </button>
+            </div>
 
-          {linkToken ? (
-            <PlaidLink
-              token={linkToken}
-              onSuccess={handleOnSuccess}
-              onExit={handleOnExit}
-            >
-              {profile?.linkedBank ? "Bank Account Linked" : "Connect Bank Account"}
-            </PlaidLink>
-          ) : (
-            <button className="w-full bg-gray-300 text-white py-2 px-4 rounded" disabled>
-              Loading...
-            </button>
-          )}
+            {/* Link Bank Account Task */}
+            <div className="border rounded-lg p-4 flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-[#386641]">
+                  Link Bank Account
+                </p>
+                {profile?.linkedBank && (
+                  <div className="flex items-center text-green-600">
+                    <FontAwesomeIcon icon={faCheck} />{" "}
+                    <span className="ml-2">Completed</span>
+                  </div>
+                )}
+              </div>
+              {linkToken ? (
+                <PlaidLink
+                  token={linkToken}
+                  onSuccess={handleOnSuccess}
+                  onExit={handleOnExit}
+                >
+                  <button className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm">
+                    {profile?.linkedBank ? "Change account" : "Link Bank Account"}
+                  </button>
+                </PlaidLink>
+              ) : (
+                <button
+                  className="bg-gray-300 text-white px-4 py-2 rounded"
+                  disabled
+                >
+                  Loading...
+                </button>
+              )}
+            </div>
+
+            {/* Link PayPal Task */}
+            <div className="border rounded-lg p-4 flex justify-between items-center">
+              <div>
+                <p className="font-semibold text-[#386641]">Link PayPal</p>
+                {profile?.linkedPaypal && (
+                  <div className="flex items-center text-green-600">
+                    <FontAwesomeIcon icon={faCheck} />{" "}
+                    <span className="ml-2">Completed</span>
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => setShowPayPalModal(true)}
+                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm"
+              >
+                {profile?.linkedPaypal ? "Change PayPal Email" : "Link PayPal"}
+              </button>
+            </div>
+          </div>
         </div>
 
-        <button
-          onClick={() => navigate("/add-friends")}
-          className="mt-6 w-full bg-[#6A994E] hover:bg-[#386641] text-white py-2 px-4 rounded-lg shadow-md transition-colors"
-        >
-          Add Friends
-        </button>
-        <button
-          onClick={handleLogout}
-          className="mt-4 w-full bg-[#BC4749] hover:bg-red-700 text-white py-2 px-4 rounded-lg shadow-md transition-colors"
-        >
-          Logout
-        </button>
-
+        {/* Friend Requests Section */}
         <div className="mt-6">
           <h3 className="text-xl font-bold text-[#6A994E]">Friend Requests</h3>
           {incomingRequests.length === 0 ? (
@@ -265,6 +324,42 @@ const ProfilePage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* PayPal Modal */}
+      {showPayPalModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 w-80">
+            <h2 className="text-xl font-bold text-[#386641] mb-4">
+              {profile?.linkedPaypal ? "Change PayPal Email" : "Link PayPal"}
+            </h2>
+            <form onSubmit={handlePayPalSubmit}>
+              <input
+                type="email"
+                placeholder="Enter your PayPal email"
+                value={paypalEmail}
+                onChange={(e) => setPaypalEmail(e.target.value)}
+                className="w-full border border-gray-300 p-2 rounded mb-4"
+                required
+              />
+              <div className="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPayPalModal(false)}
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded"
+                >
+                  Submit
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

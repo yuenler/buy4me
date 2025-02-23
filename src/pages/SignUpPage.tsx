@@ -3,18 +3,18 @@ import { useNavigate, Link } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
-import paypalIcon from "../images/paypal-logo.png";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [username, setUsername] = useState("");
-  const [paypal, setPaypal] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isPaypalModalOpen, setPaypalModalOpen] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignup = async () => {
     if (password !== confirmPassword) {
@@ -32,17 +32,24 @@ const SignUpPage: React.FC = () => {
 
       await setDoc(doc(firestore, "profiles", user.uid), {
         username,
-        paypal,
         email,
         friends: [],
       });
 
-      console.log("User signed up with:", { username, paypal, email });
+      console.log("User signed up with:", { username, email });
       navigate("/profile");
     } catch (error) {
       console.error("Error signing up:", error);
       alert(`Sign up failed: ${error}`);
     }
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
   };
 
   return (
@@ -52,7 +59,7 @@ const SignUpPage: React.FC = () => {
           Buy4Me
         </h1>
         <p className="mt-2 text-lg text-[#6A994E]">
-          Your one-stop shop for all your needs
+          Get your friends to buy stuff for you.
         </p>
       </div>
       <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md border-4 border-[#A7C957]">
@@ -83,40 +90,22 @@ const SignUpPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border border-[#6A994E] p-3 pr-10 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#386641]"
-          >
-            {showPassword ? "👁" : "👁‍🗨"}
-          </button>
+          <span onClick={toggleShowPassword} style={{ cursor: 'pointer', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+          </span>
         </div>
 
         <div className="relative">
           <input
-            type={showPassword ? "text" : "password"}
+            type={showConfirmPassword ? "text" : "password"}
             placeholder="Confirm Password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full border border-[#6A994E] p-3 pr-10 mb-6 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
           />
-          <button
-            type="button"
-            onClick={() => setShowPassword(!showPassword)}
-            className="absolute inset-y-0 right-0 flex items-center pr-3 text-[#386641]"
-          >
-            {showPassword ? "👁" : "👁‍🗨"}
-          </button>
-        </div>
-
-        <div className="mb-4">
-          <p className="text-[#6A994E] mb-2 text-left">Link your PayPal</p>
-          <div className="flex justify-start">
-            <button type="button" onClick={() => setPaypalModalOpen(true)}>
-              <img src={paypalIcon} alt="Link your PayPal" className="h-12 w-40" />
-            </button>
-          </div>
-          
+          <span onClick={toggleShowConfirmPassword} style={{ cursor: 'pointer', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+            <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
+          </span>
         </div>
 
         <button

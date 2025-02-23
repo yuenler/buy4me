@@ -100,9 +100,9 @@ const Buy4MePage: React.FC = () => {
         timestamp: Date.now(),
         unboughtItems: [],
         fulfillment: 'pending',
-        payPalRequestSent: false,
+        venmoRequestSent: false,
         verificationStatus: 'idle',
-        paypalAccountToRequestFrom: profile?.paypal,
+        venmoAccountToRequestFrom: profile?.venmo,
       };
 
       const docRef = await addDoc(collection(firestore, 'requests'), newRequest);

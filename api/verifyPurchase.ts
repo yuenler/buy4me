@@ -131,10 +131,11 @@ If multiple matching transactions exist, use the most recent one that satisfies 
     // return res.status(200).json(result);
 
     return res.status(200).json({
-      purchaseMade: false,
-      purchaseLocation: '',
-      fullAmount: 0,
+      purchaseMade: true,
+      purchaseLocation: 'house',
+      fullAmount: 20,
       reimburseAmount: 10.95,
+      requestTextSummary: 'For doing the dishes',
     })
   } catch (error) {
     console.error('Error in verifyPurchases endpoint:', error);

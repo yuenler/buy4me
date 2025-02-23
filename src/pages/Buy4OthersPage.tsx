@@ -19,6 +19,7 @@ const Buy4OthersPage: React.FC = () => {
     id: string;
     currentAmount: number;
     senderEmail: string;
+    requestTextSummary: string;
   } | null>(null);
 
   const user = auth.currentUser;
@@ -73,6 +74,14 @@ const Buy4OthersPage: React.FC = () => {
         }),
       });
       const data = await response.json();
+      console.log({
+        fulfillment: "completed",
+        fullPrice: data.fullAmount,
+        reimburseAmount: data.reimburseAmount,
+        purchaseLocation: data.purchaseLocation,
+        verificationStatus: data.purchaseMade ? "verified" : "notVerified",
+        requestTextSummary: data.requestTextSummary,
+      });
       // Expected response:
       // { purchaseMade: true, purchaseLocation: "Star market", fullAmount: 20.50, reimburseAmount: 10.95 }
       await updateDoc(doc(firestore, "requests", requestId), {
@@ -81,6 +90,7 @@ const Buy4OthersPage: React.FC = () => {
         reimburseAmount: data.reimburseAmount,
         purchaseLocation: data.purchaseLocation,
         verificationStatus: data.purchaseMade ? "verified" : "notVerified",
+        requestTextSummary: data.requestTextSummary,
       });
     } catch (error) {
       console.error("Error verifying purchase:", error);
@@ -90,46 +100,53 @@ const Buy4OthersPage: React.FC = () => {
     }
   };
 
-  // Send the PayPal request and update the Firestore document with the sent amount.
-  const handleSendPayPalRequest = async (requestId: string, amount: number, senderEmail: string) => {
+  // Send the Venmo request and update the Firestore document with the sent amount.
+  const handleSendVenmoRequest = async (
+    requestId: string,
+    amount: number,
+    venmoUsername: string,
+    requestTextSummary: string
+  ) => {
     try {
-      await fetch("/api/sendPayPalRequest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount,
-          recipientEmail: profile?.paypal,
-          senderEmail,
-        }),
-      });
+      // Construct the Venmo URL with the linking schema.
+      // Here, we encode a note ("for dinner") – feel free to modify this as needed.
+      const note = encodeURIComponent(requestTextSummary);
+      const venmoUrl = `venmo://paycharge?txn=charge&recipients=${venmoUsername}&amount=${amount}&note=${note}`;
+
+      // Open the Venmo URL to trigger the app.
+      window.location.href = venmoUrl;
+
+      // Optionally update the Firestore document to record that the Venmo request was "sent".
       await updateDoc(doc(firestore, "requests", requestId), {
-        payPalRequestSent: amount,
+        venmoRequestSent: amount,
       });
     } catch (error) {
-      console.error("Error sending PayPal request:", error);
+      console.error("Error sending Venmo request:", error);
     }
   };
+
 
   // Called when the user sends a custom amount from the modal.
   const handleSendCustomAmount = async () => {
     if (customAmountModal) {
-      await handleSendPayPalRequest(
+      await handleSendVenmoRequest(
         customAmountModal.id,
         customAmountModal.currentAmount,
         customAmountModal.senderEmail!,
+        customAmountModal.requestTextSummary!
       );
       setCustomAmountModal(null);
     }
   };
 
   // Opens the modal for custom amount.
-  const openCustomAmountModal = (requestId: string, baseAmount: number, senderEmail: string) => {
-    setCustomAmountModal({ id: requestId, currentAmount: baseAmount, senderEmail });
+  const openCustomAmountModal = (requestId: string, baseAmount: number, senderEmail: string, requestTextSummary: string) => {
+    setCustomAmountModal({ id: requestId, currentAmount: baseAmount, senderEmail, requestTextSummary });
   };
 
   // Pending requests remain unchanged.
   const pendingRequests = requests.filter((r) => r.fulfillment === "pending");
-  // Completed requests (for sending PayPal requests) are those with fulfillment === "completed".
+  // Completed requests (for sending Venmo requests) are those with fulfillment === "completed".
   const pastRequests = requests.filter((r) => r.fulfillment === "completed");
 
   return (
@@ -172,45 +189,52 @@ const Buy4OthersPage: React.FC = () => {
                     )}
                     {status === "notVerified" && (
                       <div className="mt-3 space-y-2">
-                        <p className="text-sm font-medium text-red-600">
-                          Could not find this transaction
-                        </p>
                         <div className="flex flex-wrap gap-2">
-                          <button
-                            onClick={() => handlePurchased(request.id!)}
-                            className="bg-[#6A994E] hover:bg-[#386641] text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-300"
+                        <button
+                            disabled
+                            className="w-full bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
-                            Check Again
+                            <div className="text-sm font-bold">
+                              We could not verify your transaction from your bank
+                              account data
+                            </div>
                           </button>
                           <button
                             onClick={() =>
-                              handleSendPayPalRequest(
+                              handleSendVenmoRequest(
                                 request.id!,
                                 request.reimburseAmount!,
-                                request.paypalAccountToRequestFrom ?? '',
+                                request.venmoAccountToRequestFrom ?? '',
+                                request.requestTextSummary ?? '',
                               )
                             }
                             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
                             <div className="text-lg font-bold">
-                              PayPal request ${request.reimburseAmount}
+                              Venmo request ${request.reimburseAmount}
                             </div>
                             <div className="text-xs">
                               The estimated cost of the requested items
                             </div>
                           </button>
                           <button
-                            onClick={() =>
-                              setCustomAmountModal({
-                                id: request.id!,
-                                currentAmount: request.reimburseAmount || 0,
-                                senderEmail: request.paypalAccountToRequestFrom ?? '',
-                              })
-                            }
-                            className="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-300"
-                          >
-                            Edit Request Amount
-                          </button>
+                          onClick={() =>
+                            openCustomAmountModal(
+                              request.id!,
+                              request.reimburseAmount || 0,
+                              request.venmoAccountToRequestFrom ?? '',
+                              request.requestTextSummary ?? '',
+                            )
+                          }
+                          className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
+                        >
+                          <div className="text-lg font-bold">
+                            Venmo request custom amount
+                          </div>
+                          <div className="text-xs">
+                            Enter a custom amount to request
+                          </div>
+                        </button>
                         </div>
                       </div>
                     )}
@@ -221,7 +245,7 @@ const Buy4OthersPage: React.FC = () => {
           </section>
         )}
 
-        {/* Past (Completed) Requests with PayPal Request Options */}
+        {/* Past (Completed) Requests with Venmo Request Options */}
         {pastRequests.length > 0 && (
           <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#BC4749]">
             <h3 className="text-2xl font-semibold mb-4 text-[#BC4749]">
@@ -245,26 +269,27 @@ const Buy4OthersPage: React.FC = () => {
                           request.fulfillment.slice(1)
                         : "Pending"}
                     </p>
-                    {/* If PayPal request was already sent, display the confirmation message */}
-                    {request.payPalRequestSent ? (
+                    {/* If Venmo request was already sent, display the confirmation message */}
+                    {request.venmoRequestSent ? (
                       <p className="text-green-600 font-semibold">
-                        PayPal request for ${request.payPalRequestSent} sent!
+                        Venmo request for ${request.venmoRequestSent} sent!
                       </p>
                     ) : (
                       <div className="mt-2 space-y-2">
                         {isVerified ? (
                           <button
                             onClick={() =>
-                              handleSendPayPalRequest(
+                              handleSendVenmoRequest(
                                 request.id!,
                                 request.fullPrice!,
-                                request.paypalAccountToRequestFrom ?? '',
+                                request.venmoAccountToRequestFrom ?? '',
+                                request.requestTextSummary ?? '',
                               )
                             }
                             className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
                             <div className="text-lg font-bold">
-                              PayPal request ${request.fullPrice}
+                              Venmo request ${request.fullPrice}
                             </div>
                             <div className="text-xs">
                               The total cost of your transaction at{" "}
@@ -284,16 +309,17 @@ const Buy4OthersPage: React.FC = () => {
                         )}
                         <button
                           onClick={() =>
-                            handleSendPayPalRequest(
+                            handleSendVenmoRequest(
                               request.id!,
                               request.reimburseAmount!,
-                              request.paypalAccountToRequestFrom ?? '',
+                              request.venmoAccountToRequestFrom ?? '',
+                              request.requestTextSummary ?? '',
                             )
                           }
                           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                         >
                           <div className="text-lg font-bold">
-                            PayPal request ${request.reimburseAmount}
+                            Venmo request ${request.reimburseAmount}
                           </div>
                           <div className="text-xs">
                             The estimated cost of the requested items
@@ -304,16 +330,17 @@ const Buy4OthersPage: React.FC = () => {
                             openCustomAmountModal(
                               request.id!,
                               request.reimburseAmount || 0,
-                              request.paypalAccountToRequestFrom ?? '',
+                              request.venmoAccountToRequestFrom ?? '',
+                              request.requestTextSummary ?? '',
                             )
                           }
                           className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                         >
                           <div className="text-lg font-bold">
-                            PayPal request custom amount
+                            Venmo request custom amount
                           </div>
                           <div className="text-xs">
-                            Enter a custom amount to send
+                            Enter a custom amount to request
                           </div>
                         </button>
                       </div>

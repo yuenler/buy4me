@@ -4,12 +4,12 @@ export interface Profile {
   // The user’s profile document in Firestore
   username: string;
   phoneNumber: string;
-  paypal?: string;
+  venmo?: string;
   location?: string;
   friends?: string[]; // array of userIds who are friends
   plaidAccessToken?: string;
   linkedBank?: boolean;
-  linkedPaypal?: boolean;
+  linkedVenmo?: boolean;
   picture?: string;
 }
 
@@ -33,9 +33,10 @@ export interface Request {
   fullPrice?: number | null;
   reimburseAmount?: number | null;
   purchaseLocation?: string | null;
-  payPalRequestSent: boolean;
+  venmoRequestSent: boolean;
   verificationStatus: 'idle' | 'loading' | 'verified' | 'notVerified';
-  paypalAccountToRequestFrom?: string | null;
+  venmoAccountToRequestFrom?: string | null;
+  requestTextSummary?: string | null;
 }
 
 export interface FriendRequest {

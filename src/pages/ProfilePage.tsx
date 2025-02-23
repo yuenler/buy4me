@@ -29,9 +29,9 @@ const ProfilePage: React.FC = () => {
   // Plaid link token
   const [linkToken, setLinkToken] = useState<string | null>(null);
 
-  // PayPal modal state
-  const [showPayPalModal, setShowPayPalModal] = useState(false);
-  const [paypalEmail, setPaypalEmail] = useState("");
+  // Venmo modal state
+  const [showVenmoModal, setShowVenmoModal] = useState(false);
+  const [venmoUsername, setVenmoUsername] = useState("");
 
   // Fetch current user's profile from Firestore
   useEffect(() => {
@@ -152,23 +152,23 @@ const ProfilePage: React.FC = () => {
     }
   };
 
-  // Handler for PayPal submission
-  const handlePayPalSubmit = async (e: React.FormEvent) => {
+  // Handler for Venmo submission
+  const handleVenmoSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
     try {
       await updateDoc(doc(firestore, "profiles", user.uid), {
-        linkedPaypal: true,
-        paypal: paypalEmail,
+        linkedVenmo: true,
+        venmo: venmoUsername,
       });
       const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
       if (profileDoc.exists()) {
         setProfile(profileDoc.data() as Profile);
       }
-      setShowPayPalModal(false);
+      setShowVenmoModal(false);
     } catch (error) {
-      console.error("Error linking PayPal:", error);
-      alert("Failed to link PayPal");
+      console.error("Error linking Venmo:", error);
+      alert("Failed to link Venmo");
     }
   };
 
@@ -239,7 +239,7 @@ const ProfilePage: React.FC = () => {
                 onClick={() => navigate("/add-friends")}
                 className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm ms-5"
               >
-                {friendCount > 0 ? "Add More Friends" : "Add Friends"}
+                {friendCount > 0 ? "Add More" : "Add Friends"}
               </button>
             </div>
 
@@ -276,11 +276,11 @@ const ProfilePage: React.FC = () => {
               )}
             </div>
 
-            {/* Link PayPal Task */}
+            {/* Link Venmo Task */}
             <div className="border rounded-lg p-4 flex justify-between items-center">
               <div>
-                <p className="font-semibold text-[#386641]">Link PayPal</p>
-                {profile?.linkedPaypal && (
+                <p className="font-semibold text-[#386641]">Link Venmo</p>
+                {profile?.linkedVenmo && (
                   <div className="flex items-center text-green-600">
                     <FontAwesomeIcon icon={faCheck} />{" "}
                     <span className="ml-2">Completed</span>
@@ -288,10 +288,10 @@ const ProfilePage: React.FC = () => {
                 )}
               </div>
               <button
-                onClick={() => setShowPayPalModal(true)}
+                onClick={() => setShowVenmoModal(true)}
                 className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm ms-5"
               >
-                {profile?.linkedPaypal ? "Change PayPal Email" : "Link PayPal"}
+                {profile?.linkedVenmo ? "Change" : "Link Venmo"}
               </button>
             </div>
           </div>
@@ -325,26 +325,26 @@ const ProfilePage: React.FC = () => {
         </div>
       </div>
 
-      {/* PayPal Modal */}
-      {showPayPalModal && (
+      {/* Venmo Modal */}
+      {showVenmoModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-lg p-6 w-80">
             <h2 className="text-xl font-bold text-[#386641] mb-4">
-              {profile?.linkedPaypal ? "Change PayPal Email" : "Link PayPal"}
+              {profile?.linkedVenmo ? "Change Venmo Username" : "Link Venmo"}
             </h2>
-            <form onSubmit={handlePayPalSubmit}>
+            <form onSubmit={handleVenmoSubmit}>
               <input
-                type="email"
-                placeholder="Enter your PayPal email"
-                value={paypalEmail}
-                onChange={(e) => setPaypalEmail(e.target.value)}
+                type="text"
+                placeholder="Enter your Venmo username"
+                value={venmoUsername}
+                onChange={(e) => setVenmoUsername(e.target.value)}
                 className="w-full border border-gray-300 p-2 rounded mb-4"
                 required
               />
               <div className="flex justify-end space-x-2">
                 <button
                   type="button"
-                  onClick={() => setShowPayPalModal(false)}
+                  onClick={() => setShowVenmoModal(false)}
                   className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
                 >
                   Cancel

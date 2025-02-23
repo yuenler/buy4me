@@ -195,7 +195,7 @@ const ProfilePage: React.FC = () => {
         <div className="mt-4">
           <h3 className="font-bold text-[#6A994E]">Profile Setup Status:</h3>
           <ul className="list-disc ml-6 text-[#386641]">
-            <li className={profile?.setupSteps?.addFriends ? "text-green-600" : "text-red-500"}>
+            <li className={(profile?.friends?.length > 1) ? "text-green-600" : "text-red-500"}>
               Add Friends
             </li>
             <li className={profile?.setupSteps?.linkBank ? "text-green-600" : "text-red-500"}>

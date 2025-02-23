@@ -17,7 +17,7 @@ const FriendModal: React.FC<FriendModalProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg max-w-sm w-full">
-        <h3 className="text-xl font-bold mb-4">Request from {friendName}</h3>
+        <h3 className="text-xl font-bold mb-4">Request for {friendName}</h3>
         <textarea
           placeholder="Hey could you get me a coffee from Blank Street?"
           value={requestText}

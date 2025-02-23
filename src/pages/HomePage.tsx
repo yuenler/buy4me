@@ -15,6 +15,7 @@ import { Request, Friend } from '../types';
 const HomePage: React.FC = () => {
   const user = auth.currentUser;
   const userId = user?.uid || '';
+  const [username, setUsername] = useState<string | null>(null);
 
   const [requests, setRequests] = useState<Request[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
@@ -77,6 +78,7 @@ const HomePage: React.FC = () => {
         buyerUsername: friends.find((f) => f.id === selectedFriend)?.username || '',
         buyerId: selectedFriend,
         requesterId: userId,
+        requesterUsername: username,
         text: requestText,
         fullPrice: null,
         timestamp: Date.now(),

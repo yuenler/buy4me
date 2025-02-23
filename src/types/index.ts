@@ -21,6 +21,7 @@ export interface Request {
   buyerUsername: string;
   buyerId: string | null;
   requesterId: string | null;
+  requesterUsername: string | null;
   text: string | null;
   fullPrice: number | null;
   timestamp: number | null;

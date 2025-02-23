@@ -63,7 +63,7 @@ const NotificationsPage: React.FC = () => {
                   key={request.id}
                   className="bg-[#F2E8CF] p-4 rounded-lg shadow-md"
                 >
-                  <p className="font-medium">{request.buyerUsername}</p>
+                  <p className="font-medium">{request.requesterUsername}</p>
                   <p className="text-sm">{request.text}</p>
                   <button
                     onClick={() => handlePurchased(request.id!)}

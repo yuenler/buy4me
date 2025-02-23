@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBagShopping, faHandHoldingHeart, faUser } from "@fortawesome/free-solid-svg-icons";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "./firebase";
+import FriendMapPage from "./pages/FriendMapPage";
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -43,6 +44,7 @@ const App: React.FC = () => {
             <Route path="/add-friends" element={<AddFriendsPage />} />
             <Route path="/buy4others" element={<Buy4OthersPage />} />
             <Route path="/" element={<Buy4MePage />} />
+            <Route path="/friendmap" element={<FriendMapPage />} />
           </>
         ) : (
           <>
@@ -63,10 +65,15 @@ const App: React.FC = () => {
               <FontAwesomeIcon icon={faBagShopping} size="lg" />
               <span className="text-sm mt-1">buy4me</span>
             </Link>
+            <Link to="/friendmap" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
+              <FontAwesomeIcon icon={faBagShopping} size="lg" />
+              <span className="text-sm mt-1">friendmap</span>
+            </Link>
             <Link to="/profile" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
               <FontAwesomeIcon icon={faUser} size="lg" />
               <span className="text-sm mt-1">profile</span>
             </Link>
+
           </nav>
         )}
       </div>

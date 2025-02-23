@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Circle, InfoWindow } from "@react-google-maps/api";
 import { auth, firestore } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
 const mapContainerStyle = {
   width: "100%",
-  height: "100vh",
+  height: "65vh",
+  borderRadius: "12px",
 };
 
 const FriendMap: React.FC = () => {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [friends, setFriends] = useState<any[]>([]);
-  const [friendLocations, setFriendLocations] = useState<{ id: string; lat: number; lng: number }[]>([]);
+  const [friends, setFriends] = useState<{ id: string; username: string; lat: number; lng: number }[]>([]);
+  const [openInfoWindows, setOpenInfoWindows] = useState<{ [key: string]: boolean }>({}); // Tracks which labels are open
   const user = auth.currentUser;
 
   useEffect(() => {
@@ -31,48 +32,38 @@ const FriendMap: React.FC = () => {
           });
         }
 
-        // Fetch full friend profiles
+        // Fetch friend profiles
         if (userData.friends && Array.isArray(userData.friends)) {
           const friendPromises = userData.friends.map(async (friendId: string) => {
             const friendRef = doc(firestore, "profiles", friendId);
             const friendSnap = await getDoc(friendRef);
-            
+
             if (friendSnap.exists()) {
               const friendData = friendSnap.data();
-              
-              console.log(`Friend Data (${friendId}):`, friendData); // 🔍 Debug: Print full friend profile
-
               if (friendData.location) {
-                console.log(`Friend Location (${friendId}):`, friendData.location); // 🔍 Debug: Print location field
                 return {
                   id: friendId,
                   username: friendData.username || "Unknown",
                   lat: friendData.location.latitude,
                   lng: friendData.location.longitude,
                 };
-              } else {
-                console.warn(`⚠️ Friend (${friendId}) has no location field!`);
               }
-            } else {
-              console.warn(`❌ Friend (${friendId}) profile does not exist!`);
             }
-
             return null;
           });
 
-          const friendData = (await Promise.all(friendPromises)).filter(Boolean);
+          const friendData = (await Promise.all(friendPromises)).filter(Boolean) as {
+            id: string;
+            username: string;
+            lat: number;
+            lng: number;
+          }[];
+
           setFriends(friendData);
 
-        // Extract only locations
-        const friendLocs = friendData
-            .filter((friend) => friend !== null)
-            .map((friend) => ({
-            id: friend?.id ?? "unknown", // ✅ Defaults to "unknown" if missing
-            lat: friend?.lat ?? 0, // ✅ Defaults to 0
-            lng: friend?.lng ?? 0, // ✅ Defaults to 0
-            }));
-
-          setFriendLocations(friendLocs);
+          // Set all info windows to open initially
+          const initialInfoState = Object.fromEntries(friendData.map((friend) => [friend.id, true]));
+          setOpenInfoWindows(initialInfoState);
         }
       } catch (error) {
         console.error("🚨 Error fetching locations:", error);
@@ -83,38 +74,72 @@ const FriendMap: React.FC = () => {
   }, [user]);
 
   return (
-    <div className="p-4">
-      {/* Debugging output for full friend objects */}
-      <div className="p-4 bg-white shadow-md rounded mb-4">
-        <h2 className="text-xl font-semibold text-[#386641]">Friends:</h2>
-        {friends.length > 0 ? (
-          friends.map((friend) => (
-            <p key={friend.id} className="text-gray-800">
-              <strong>{friend.username}</strong> (ID: {friend.id})
-              <br />
-              Location: {friend.lat && friend.lng ? `Lat: ${friend.lat}, Lng: ${friend.lng}` : "❌ No location available"}
-            </p>
-          ))
-        ) : (
-          <p className="text-gray-600">No friends found or no friends with locations.</p>
-        )}
+    <div className="min-h-screen bg-[#F2E8CF] p-6 flex flex-col items-center">
+      <div className="w-full max-w-lg bg-white shadow-lg rounded-xl p-6">
+        {/* Friends List */}
+        <div className="mb-4 bg-[#F2E8CF] p-4 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-[#6A994E]">Nearby Friends:</h3>
+          {friends.length > 0 ? (
+            <ul className="mt-2 space-y-2">
+              {friends.map((friend) => (
+                <li key={friend.id} className="text-[#386641]">
+                  <strong>{friend.username}</strong> 🌍 
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-gray-700 text-sm">No friends found nearby.</p>
+          )}
+        </div>
+
+        {/* Google Map */}
+        <LoadScript googleMapsApiKey="AIzaSyC44tWWL0aaZOV_UCjeo8Qf7vFZXI6XHVE">
+          {userLocation ? (
+            <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={13}>
+              {/* User's Location as a Green Circle */}
+              <Circle
+                center={userLocation}
+                radius={150}
+                options={{
+                  strokeColor: "#6A994E",
+                  fillColor: "#6A994E",
+                  strokeWeight: 1.5,
+                }}
+              />
+              <InfoWindow position={userLocation}>
+                <div className="p-1 text-[#6A994E] font-bold">You</div>
+              </InfoWindow>
+
+              {/* Friends' Locations with Clickable Labels */}
+              {friends.map((friend) => (
+                <React.Fragment key={friend.id}>
+                  <Circle
+                    center={{ lat: friend.lat, lng: friend.lng }}
+                    radius={200}
+                    options={{
+                      strokeColor: "#BC4749",
+                      fillColor: "#BC4749",
+                      strokeWeight: 2,
+                    }}
+                    onClick={() => setOpenInfoWindows((prev) => ({ ...prev, [friend.id]: true }))}
+                  />
+                  {openInfoWindows[friend.id] && (
+                    <InfoWindow
+                      position={{ lat: friend.lat, lng: friend.lng }}
+                      onCloseClick={() => setOpenInfoWindows((prev) => ({ ...prev, [friend.id]: false }))}
+                      options={{ disableAutoPan: true }}
+                    >
+                      <div className="p-1 text-[#BC4749] font-semibold text-sm">{friend.username}</div>
+                    </InfoWindow>
+                  )}
+                </React.Fragment>
+              ))}
+            </GoogleMap>
+          ) : (
+            <p className="text-center text-gray-700">Loading map...</p>
+          )}
+        </LoadScript>
       </div>
-
-      {/* Google Map */}
-      <LoadScript googleMapsApiKey="AIzaSyC44tWWL0aaZOV_UCjeo8Qf7vFZXI6XHVE">
-        {userLocation ? (
-          <GoogleMap mapContainerStyle={mapContainerStyle} center={userLocation} zoom={13}>
-            <Marker position={userLocation} label="You" />
-
-            {/* Friends' Locations Markers */}
-            {friendLocations.map((friend) => (
-              <Marker key={friend.id} position={{ lat: friend.lat, lng: friend.lng }} label="F" />
-            ))} 
-          </GoogleMap>
-        ) : (
-          <p>Loading map...</p>
-        )}
-      </LoadScript>
     </div>
   );
 };

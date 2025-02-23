@@ -186,8 +186,7 @@ const Buy4MePage: React.FC = () => {
               ))
           )}
         </section>
-        <FriendMap></FriendMap>
-
+       
         {modalVisible && selectedFriend && (
           <FriendModal
             friendName={friends.find((f) => f.id === selectedFriend)?.username || 'Unknown Friend'}

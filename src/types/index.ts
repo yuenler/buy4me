@@ -7,7 +7,7 @@ export interface Profile {
   username: string;
   phoneNumber: string;
   venmo?: string;
-  location?: string;
+  location?: GeoPoint | null;
   friends?: string[]; // array of userIds who are friends
   plaidAccessToken?: string;
   linkedBank?: boolean;

@@ -8,8 +8,8 @@ async function testPayPal() {
     method: "POST",
     url: "/api/sendPayPalRequest",
     body: {
-      recipientEmail: "gardenia_liu@yahoo.com",
-      recipientPhone: "5126940035",
+      recipientEmail: "email@email.com",
+      recipientPhone: "1234567890",
       amount: 1,
     },
   });

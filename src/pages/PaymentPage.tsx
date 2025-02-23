@@ -15,8 +15,8 @@ const PaymentPage: React.FC = () => {
       method: "POST",
       url: "/api/sendPayPalRequest",
       body: {
-        recipientEmail: "gardenia_liu@yahoo.com",
-        recipientPhone: "5126940035",
+        recipientEmail: "email@email.com",
+        recipientPhone: "1234567890",
         amount: 1,
       },
     });
@@ -36,8 +36,8 @@ const PaymentPage: React.FC = () => {
 
   const handleSendPayPalRequest = async () => {
     try {
-      const recipientEmail = "gardenia_liu@yahoo.com";
-      const recipientPhone = "5126940035"; // not used in this example, but available if needed
+      const recipientEmail = "email@email.com";
+      const recipientPhone = "1234567890"; // not used in this example, but available if needed
       const amount = 1; // $1 request
 
       const payload = { recipientEmail, recipientPhone, amount };

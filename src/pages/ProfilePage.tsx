@@ -237,7 +237,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <button
                 onClick={() => navigate("/add-friends")}
-                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm ms-5"
+                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded w-30 text-sm ms-5"
               >
                 {friendCount > 0 ? "Add More" : "Add Friends"}
               </button>
@@ -262,13 +262,13 @@ const ProfilePage: React.FC = () => {
                   onSuccess={handleOnSuccess}
                   onExit={handleOnExit}
                 >
-                  <button className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm">
+                  <button className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded w-30 text-sm">
                     {profile?.linkedBank ? "Change account" : "Link Account"}
                   </button>
                 </PlaidLink>
               ) : (
                 <button
-                  className="bg-gray-300 text-white px-4 py-2 rounded"
+                  className="bg-gray-300 text-white px-4 py-2 w-30 rounded"
                   disabled
                 >
                   Loading...
@@ -289,7 +289,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowVenmoModal(true)}
-                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm ms-5"
+                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded w-30 text-sm ms-5"
               >
                 {profile?.linkedVenmo ? "Change" : "Link Venmo"}
               </button>

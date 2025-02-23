@@ -42,7 +42,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       access_token: plaidAccessToken,
       start_date: startDateStr,
       end_date: endDateStr,
-      options: { count: 50 },
+      options: { count: 20 },
     });
     const transactions = transactionsResponse.data.transactions;
 

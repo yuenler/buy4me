@@ -26,3 +26,5 @@ async function testPayPal() {
 }
 
 testPayPal().catch(console.error);
+
+export {};

@@ -3,7 +3,7 @@ import { auth, firestore } from "../firebase";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { Request } from "../types";
 
-const NotificationsPage: React.FC = () => {
+const Buy4OthersPage: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
   const user = auth.currentUser;
 
@@ -96,7 +96,7 @@ const NotificationsPage: React.FC = () => {
           </section>
         )}
 
-        {/* ℹ️ No Notifications */}
+        {/* ℹ️ No Buy4Others */}
         {requests.length === 0 && (
           <p className="text-center text-[#6A994E]">No requests yet.</p>
         )}
@@ -105,4 +105,4 @@ const NotificationsPage: React.FC = () => {
   );
 };
 
-export default NotificationsPage;
+export default Buy4OthersPage;

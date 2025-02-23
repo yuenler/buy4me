@@ -40,7 +40,7 @@ export interface FriendRequest {
 }
 
 export interface Message {
-  // For messages/notifications
+  // For messages/buy4others
   id?: string;
   text: string;
   orderId: string;

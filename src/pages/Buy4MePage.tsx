@@ -12,7 +12,7 @@ import { firestore, auth } from '../firebase';
 import FriendModal from '../components/FriendModal';
 import { Request, Friend } from '../types';
 
-const HomePage: React.FC = () => {
+const Buy4MePage: React.FC = () => {
   const user = auth.currentUser;
   const userId = user?.uid || '';
   const [username, setUsername] = useState<string | null>(null);
@@ -179,4 +179,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default Buy4MePage;

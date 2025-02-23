@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
-import HomePage from "./pages/HomePage";
+import Buy4MePage from "./pages/Buy4MePage";
 import SignUpPage from "./pages/SignUpPage";
 import SignInPage from "./pages/SignInPage";
 import ProfilePage from "./pages/ProfilePage";
 import AddFriendsPage from "./pages/AddFriendsPage";
-import NotificationsPage from "./pages/NotificationsPage";
+import Buy4OthersPage from "./pages/Buy4OthersPage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBagShopping, faHandHoldingHeart, faUser } from "@fortawesome/free-solid-svg-icons";
 import { onAuthStateChanged } from "firebase/auth";
@@ -41,8 +41,8 @@ const App: React.FC = () => {
             <Route path="/signin" element={<Navigate to="/" />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/add-friends" element={<AddFriendsPage />} />
-            <Route path="/notifications" element={<NotificationsPage />} />
-            <Route path="/" element={<HomePage />} />
+            <Route path="/buy4others" element={<Buy4OthersPage />} />
+            <Route path="/" element={<Buy4MePage />} />
           </>
         ) : (
           <>
@@ -55,7 +55,7 @@ const App: React.FC = () => {
 
         {currentUser && (
           <nav className="fixed bottom-0 left-0 right-0 bg-white flex justify-center gap-10 py-4 border-t border-[#D1D1D1]">
-            <Link to="/notifications" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
+            <Link to="/buy4others" className="text-[#386641] flex flex-col items-center hover:text-[#6A994E] transition">
               <FontAwesomeIcon icon={faHandHoldingHeart} size="lg" />
               <span className="text-sm mt-1">buy4others</span>
             </Link>

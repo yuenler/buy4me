@@ -61,82 +61,88 @@ the reimbursement amount should be what you think is reasonable given the reques
 If a matching transaction is found, return a JSON object with:
 {
   "purchaseMade": true,
-  "reimburseAmount": <the dollar amount from the transaction, adjusted if it seems unreasonable>
+  "fullAmount": <the dollar amount from the transaction, as recorded on Plaid>,
+  "reimburseAmount": <the dollar amount from the transaction, adjusted if it seems unreasonable>,
+  "purchaseLocation": <the place where the purchase was made, e.g. 'Star market', 'Costco'>
+  "requestTextSummary": <a very short 2-3 word description of the purchase request to be used on venmo>
 }
-If no matching transaction is found, return:
+If no matching transaction is found, try your best to estimate the reimbursement amount and return:
 {
   "purchaseMade": false,
-  "reimburseAmount": 0
+  "fullAmount": 0,
+  "reimburseAmount": <an estimated amount to reimburse>,
+  "purchaseLocation": "",
+  "requestTextSummary": <a very short 2-3 word description of the purchase request to be used on venmo>
 }
 Return only the JSON object in your response.
 If multiple matching transactions exist, use the most recent one that satisfies the purchase request.
     `.trim();
 
     // Call the OpenAI API to analyze the transactions and determine the reimbursement amount
-  //   const completion = await openai.chat.completions.create({
-  //     model: "gpt-4o",
-  //     messages: [
-  //         { role: "system", content: "You are an expert assistant that analyzes bank transactions to verify purchases." },
-  //         {
-  //             role: "user",
-  //             content: prompt,
-  //         },
-  //     ],
-  //     store: true,
-  // });
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+          { role: "system", content: "You are an expert assistant that analyzes bank transactions to verify purchases." },
+          {
+              role: "user",
+              content: prompt,
+          },
+      ],
+      store: true,
+  });
 
-  //   const aiText = completion.choices[0].message?.content;
+    const aiText = completion.choices[0].message?.content;
 
-  //   // get the first and last bracket in the string
-  //   const startIndex = aiText?.indexOf('{');
-  //   const endIndex = aiText?.lastIndexOf('}');
+    // get the first and last bracket in the string
+    const startIndex = aiText?.indexOf('{');
+    const endIndex = aiText?.lastIndexOf('}');
     
-  //   if (startIndex === -1 || endIndex === -1 
-  //     || !startIndex || !endIndex
-  //   ) {
-  //     return res.status(500).json({
-  //       error: 'Invalid OpenAI response',
-  //       details: 'Missing brackets',
-  //       aiText,
-  //     });
-  //   }
+    if (startIndex === -1 || endIndex === -1 
+      || !startIndex || !endIndex
+    ) {
+      return res.status(500).json({
+        error: 'Invalid OpenAI response',
+        details: 'Missing brackets',
+        aiText,
+      });
+    }
 
-  //   const jsonStr = aiText?.substring(startIndex, endIndex + 1);
-  //   if (!jsonStr) {
-  //     return res.status(500).json({
-  //       error: 'Invalid OpenAI response',
-  //       details: 'Missing brackets',
-  //       aiText,
-  //     });
-  //   }
+    const jsonStr = aiText?.substring(startIndex, endIndex + 1);
+    if (!jsonStr) {
+      return res.status(500).json({
+        error: 'Invalid OpenAI response',
+        details: 'Missing brackets',
+        aiText,
+      });
+    }
 
-  //   if (jsonStr === '{}') {
-  //     return res.status(200).json({
-  //       purchaseMade: false,
-  //       reimburseAmount: 0,
-  //     });
-  //   }
+    if (jsonStr === '{}') {
+      return res.status(200).json({
+        purchaseMade: false,
+        reimburseAmount: 0,
+      });
+    }
 
-  //   let result;
-  //   try {
-  //     result = JSON.parse(jsonStr);
-  //   } catch (parseError) {
-  //     return res.status(500).json({
-  //       error: 'Error parsing OpenAI response',
-  //       details: parseError,
-  //       aiText,
-  //     });
-  //   }
+    let result;
+    try {
+      result = JSON.parse(jsonStr);
+    } catch (parseError) {
+      return res.status(500).json({
+        error: 'Error parsing OpenAI response',
+        details: parseError,
+        aiText,
+      });
+    }
 
-    // return res.status(200).json(result);
+    return res.status(200).json(result);
 
-    return res.status(200).json({
-      purchaseMade: true,
-      purchaseLocation: 'house',
-      fullAmount: 20,
-      reimburseAmount: 10.95,
-      requestTextSummary: 'For doing the dishes',
-    })
+    // return res.status(200).json({
+    //   purchaseMade: true,
+    //   purchaseLocation: 'house',
+    //   fullAmount: 20,
+    //   reimburseAmount: 10.95,
+    //   requestTextSummary: 'For doing the dishes',
+    // })
   } catch (error) {
     console.error('Error in verifyPurchases endpoint:', error);
     return res.status(500).json({ error: 'Internal server error', details: error });

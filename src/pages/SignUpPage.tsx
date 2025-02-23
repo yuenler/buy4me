@@ -35,7 +35,7 @@ const SignUpPage: React.FC = () => {
         username,
         email,
         friends: [],
-        location: new GeoPoint(0, 0),
+        location: new GeoPoint(42.22, -71.07),
       });
 
       console.log("User signed up with:", { username, email });

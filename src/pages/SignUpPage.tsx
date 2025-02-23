@@ -5,6 +5,8 @@ import { doc, setDoc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { GeoPoint } from "firebase/firestore";
+
 
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
@@ -34,6 +36,7 @@ const SignUpPage: React.FC = () => {
         username,
         email,
         friends: [],
+        location: new GeoPoint(0, 0),
       });
 
       console.log("User signed up with:", { username, email });

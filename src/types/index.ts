@@ -1,4 +1,6 @@
 // src/types/index.ts
+import { GeoPoint } from "firebase/firestore";
+
 
 export interface Profile {
   // The user’s profile document in Firestore

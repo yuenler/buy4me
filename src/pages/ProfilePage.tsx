@@ -237,7 +237,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <button
                 onClick={() => navigate("/add-friends")}
-                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm"
+                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm ms-5"
               >
                 {friendCount > 0 ? "Add More Friends" : "Add Friends"}
               </button>
@@ -289,7 +289,7 @@ const ProfilePage: React.FC = () => {
               </div>
               <button
                 onClick={() => setShowPayPalModal(true)}
-                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm"
+                className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm ms-5"
               >
                 {profile?.linkedPaypal ? "Change PayPal Email" : "Link PayPal"}
               </button>

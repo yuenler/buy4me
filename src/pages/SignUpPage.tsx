@@ -3,10 +3,9 @@ import { useNavigate, Link } from "react-router-dom";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, firestore } from "../firebase";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { GeoPoint } from "firebase/firestore";
-
 
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate();
@@ -93,7 +92,16 @@ const SignUpPage: React.FC = () => {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full border border-[#6A994E] p-3 pr-10 mb-4 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
           />
-          <span onClick={toggleShowPassword} style={{ cursor: 'pointer', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+          <span
+            onClick={toggleShowPassword}
+            style={{
+              cursor: "pointer",
+              position: "absolute",
+              right: "15px",
+              top: "37%",
+              transform: "translateY(-50%)",
+            }}
+          >
             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
           </span>
         </div>
@@ -106,7 +114,16 @@ const SignUpPage: React.FC = () => {
             onChange={(e) => setConfirmPassword(e.target.value)}
             className="w-full border border-[#6A994E] p-3 pr-10 mb-6 rounded focus:outline-none focus:ring-2 focus:ring-[#A7C957]"
           />
-          <span onClick={toggleShowConfirmPassword} style={{ cursor: 'pointer', position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)' }}>
+          <span
+            onClick={toggleShowConfirmPassword}
+            style={{
+              cursor: "pointer",
+              position: "absolute",
+              right: "15px",
+              top: "35%",
+              transform: "translateY(-50%)",
+            }}
+          >
             <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
           </span>
         </div>
@@ -121,7 +138,10 @@ const SignUpPage: React.FC = () => {
         <div className="mt-4 text-center">
           <p>
             Already have an account?{" "}
-            <Link to="/signin" className="text-[#BC4749] hover:underline font-bold">
+            <Link
+              to="/signin"
+              className="text-[#BC4749] hover:underline font-bold"
+            >
               Sign In
             </Link>
           </p>

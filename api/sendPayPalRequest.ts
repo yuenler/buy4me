@@ -8,8 +8,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
   
   // Expect recipientEmail (or recipientPhone) in the request body.
-  const { recipientEmail, recipientPhone } = req.body;
-  const amount = 1; // Request $1
+  const { recipientEmail, amount } = req.body;
 
   if (!recipientEmail) {
     res.status(400).json({ error: 'Missing recipientEmail' });

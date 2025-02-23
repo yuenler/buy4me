@@ -12,31 +12,10 @@ import {
 } from "firebase/firestore";
 import { Request } from "../types";
 
-// The Request type now includes an optional payPalRequestSent field:
-// export interface Request {
-//   id?: string;
-//   buyerUsername: string;
-//   buyerId: string | null;
-//   requesterId: string | null;
-//   requesterUsername: string | null;
-//   text: string | null;
-//   timestamp: number | null;
-//   unboughtItems: string[] | null;
-//   fulfillment: 'pending' | 'completed' | 'canceled' | null;
-//   fullPrice?: number | null;
-//   reimburseAmount?: number | null;
-//   purchaseLocation?: string | null;
-//   payPalRequestSent?: number | null;
-// }
-
-type VerificationStatus = "idle" | "loading" | "verified" | "notVerified";
 
 const Buy4OthersPage: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
   const [profile, setProfile] = useState<DocumentData | null>(null);
-  const [verificationStatus, setVerificationStatus] = useState<{
-    [id: string]: VerificationStatus;
-  }>({});
   const [customAmountModal, setCustomAmountModal] = useState<{
     id: string;
     currentAmount: number;
@@ -79,7 +58,10 @@ const Buy4OthersPage: React.FC = () => {
 
   // Verify the purchase and update Firestore accordingly.
   const handlePurchased = async (requestId: string) => {
-    setVerificationStatus((prev) => ({ ...prev, [requestId]: "loading" }));
+    // Set verificationStatus to "loading" directly in the Request document.
+    await updateDoc(doc(firestore, "requests", requestId), {
+      verificationStatus: "loading",
+    });
     try {
       const req = requests.find((r) => r.id === requestId);
       const response = await fetch("/api/verifyPurchase", {
@@ -93,43 +75,18 @@ const Buy4OthersPage: React.FC = () => {
       const data = await response.json();
       // Expected response:
       // { purchaseMade: true, purchaseLocation: "Star market", fullAmount: 20.50, reimburseAmount: 10.95 }
-      if (data.purchaseMade) {
-        await updateDoc(doc(firestore, "requests", requestId), {
-          fulfillment: "completed",
-          fullPrice: data.fullAmount,
-          reimburseAmount: data.reimburseAmount,
-          purchaseLocation: data.purchaseLocation,
-        });
-        setVerificationStatus((prev) => ({ ...prev, [requestId]: "verified" }));
-      } else {
-        setVerificationStatus((prev) => ({ ...prev, [requestId]: "notVerified" }));
-      }
+      await updateDoc(doc(firestore, "requests", requestId), {
+        fulfillment: "completed",
+        fullPrice: data.fullAmount,
+        reimburseAmount: data.reimburseAmount,
+        purchaseLocation: data.purchaseLocation,
+        verificationStatus: data.purchaseMade ? "verified" : "notVerified",
+      });
     } catch (error) {
       console.error("Error verifying purchase:", error);
-      setVerificationStatus((prev) => ({ ...prev, [requestId]: "notVerified" }));
-    }
-  };
-
-  // Use the estimate-price endpoint when verification fails.
-  const handleEstimatePrice = async (requestId: string) => {
-    try {
-      const req = requests.find((r) => r.id === requestId);
-      const response = await fetch("/api/estimate-price", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: req?.text }),
+      await updateDoc(doc(firestore, "requests", requestId), {
+        verificationStatus: "notVerified",
       });
-      const data = await response.json();
-      if (data.estimatedPrice) {
-        await updateDoc(doc(firestore, "requests", requestId), {
-          fulfillment: "completed",
-          fullPrice: data.estimatedPrice,
-          reimburseAmount: data.estimatedPrice,
-        });
-        setVerificationStatus((prev) => ({ ...prev, [requestId]: "verified" }));
-      }
-    } catch (error) {
-      console.error("Error estimating price:", error);
     }
   };
 
@@ -152,7 +109,10 @@ const Buy4OthersPage: React.FC = () => {
   // Called when the user sends a custom amount from the modal.
   const handleSendCustomAmount = async () => {
     if (customAmountModal) {
-      await handleSendPayPalRequest(customAmountModal.id, customAmountModal.currentAmount);
+      await handleSendPayPalRequest(
+        customAmountModal.id,
+        customAmountModal.currentAmount
+      );
       setCustomAmountModal(null);
     }
   };
@@ -175,12 +135,18 @@ const Buy4OthersPage: React.FC = () => {
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
           <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#A7C957]">
-            <h3 className="text-2xl font-semibold mb-4 text-[#6A994E]">Pending Requests</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-[#6A994E]">
+              Pending Requests
+            </h3>
             <ul className="space-y-4">
               {pendingRequests.map((request) => {
-                const status = verificationStatus[request.id || "0"] || "idle";
+                // Read verificationStatus directly from the Request object (defaults to "idle")
+                const status = request.verificationStatus || "idle";
                 return (
-                  <li key={request.id} className="bg-[#F2E8CF] p-4 rounded-lg shadow-md">
+                  <li
+                    key={request.id}
+                    className="bg-[#F2E8CF] p-4 rounded-lg shadow-md"
+                  >
                     <p className="font-medium">{request.requesterUsername}</p>
                     <p className="text-sm">{request.text}</p>
                     {status === "idle" && (
@@ -201,7 +167,9 @@ const Buy4OthersPage: React.FC = () => {
                     )}
                     {status === "notVerified" && (
                       <div className="mt-3 space-y-2">
-                        <p className="text-sm font-medium text-red-600">Purchase not verified</p>
+                        <p className="text-sm font-medium text-red-600">
+                          Could not find this transaction
+                        </p>
                         <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => handlePurchased(request.id!)}
@@ -210,10 +178,20 @@ const Buy4OthersPage: React.FC = () => {
                             Check Again
                           </button>
                           <button
-                            onClick={() => handleEstimatePrice(request.id!)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-300"
+                            onClick={() =>
+                              handleSendPayPalRequest(
+                                request.id!,
+                                request.reimburseAmount!
+                              )
+                            }
+                            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
-                            This is wrong, send PayPal request anyways
+                            <div className="text-lg font-bold">
+                              PayPal request ${request.reimburseAmount}
+                            </div>
+                            <div className="text-xs">
+                              The estimated cost of the requested items
+                            </div>
                           </button>
                           <button
                             onClick={() =>
@@ -239,20 +217,29 @@ const Buy4OthersPage: React.FC = () => {
         {/* Past (Completed) Requests with PayPal Request Options */}
         {pastRequests.length > 0 && (
           <section className="mb-8 bg-white p-6 rounded-xl shadow-lg border-l-4 border-[#BC4749]">
-            <h3 className="text-2xl font-semibold mb-4 text-[#BC4749]">Past Requests</h3>
+            <h3 className="text-2xl font-semibold mb-4 text-[#BC4749]">
+              Past Requests
+            </h3>
             <ul className="space-y-4">
               {pastRequests.map((request) => {
-                const isVerified =
-                  request.fullPrice != null && request.purchaseLocation != null;
+                // Use verificationStatus directly to check if the request is verified.
+                const isVerified = request.verificationStatus === "verified";
                 return (
-                  <li key={request.id} className="bg-[#F2E8CF] p-4 rounded-lg shadow-md">
-                    <p className="font-medium">{request.buyerUsername}</p>
+                  <li
+                    key={request.id}
+                    className="bg-[#F2E8CF] p-4 rounded-lg shadow-md"
+                  >
+                    <p className="font-medium">{request.requesterUsername}</p>
                     <p className="text-sm">{request.text}</p>
                     <p className="mt-2 text-sm text-[#BC4749] font-semibold">
-                      Status: {request.fulfillment ? request.fulfillment.charAt(0).toUpperCase() + request.fulfillment.slice(1) : 'Pending'}
+                      Status:{" "}
+                      {request.fulfillment
+                        ? request.fulfillment.charAt(0).toUpperCase() +
+                          request.fulfillment.slice(1)
+                        : "Pending"}
                     </p>
                     {/* If PayPal request was already sent, display the confirmation message */}
-                    {request.payPalRequestSent != null ? (
+                    {request.payPalRequestSent ? (
                       <p className="text-green-600 font-semibold">
                         PayPal request for ${request.payPalRequestSent} sent!
                       </p>
@@ -261,7 +248,10 @@ const Buy4OthersPage: React.FC = () => {
                         {isVerified ? (
                           <button
                             onClick={() =>
-                              handleSendPayPalRequest(request.id!, request.fullPrice!)
+                              handleSendPayPalRequest(
+                                request.id!,
+                                request.fullPrice!
+                              )
                             }
                             className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
@@ -269,7 +259,8 @@ const Buy4OthersPage: React.FC = () => {
                               PayPal request ${request.fullPrice}
                             </div>
                             <div className="text-xs">
-                              The total cost of your transaction at {request.purchaseLocation}
+                              The total cost of your transaction at{" "}
+                              {request.purchaseLocation}
                             </div>
                           </button>
                         ) : (
@@ -277,14 +268,18 @@ const Buy4OthersPage: React.FC = () => {
                             disabled
                             className="w-full bg-gray-400 text-white font-semibold px-4 py-2 rounded-lg text-left"
                           >
-                            <div className="text-lg font-bold">
-                              We could not verify your transaction from your bank account data
+                            <div className="text-sm font-bold">
+                              We could not verify your transaction from your bank
+                              account data
                             </div>
                           </button>
                         )}
                         <button
                           onClick={() =>
-                            handleSendPayPalRequest(request.id!, request.reimburseAmount!)
+                            handleSendPayPalRequest(
+                              request.id!,
+                              request.reimburseAmount!
+                            )
                           }
                           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
                         >
@@ -307,7 +302,9 @@ const Buy4OthersPage: React.FC = () => {
                           <div className="text-lg font-bold">
                             PayPal request custom amount
                           </div>
-                          <div className="text-xs">Enter a custom amount to send</div>
+                          <div className="text-xs">
+                            Enter a custom amount to send
+                          </div>
                         </button>
                       </div>
                     )}

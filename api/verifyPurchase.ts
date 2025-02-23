@@ -131,9 +131,9 @@ If multiple matching transactions exist, use the most recent one that satisfies 
     // return res.status(200).json(result);
 
     return res.status(200).json({
-      purchaseMade: true,
-      purchaseLocation: 'Star Market',
-      fullAmount: 20.50,
+      purchaseMade: false,
+      purchaseLocation: '',
+      fullAmount: 0,
       reimburseAmount: 10.95,
     })
   } catch (error) {

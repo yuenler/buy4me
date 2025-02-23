@@ -7,6 +7,7 @@ import {
   getDoc,
   query,
   where,
+  DocumentData,
 } from 'firebase/firestore';
 import { firestore, auth } from '../firebase';
 import FriendModal from '../components/FriendModal';
@@ -15,12 +16,12 @@ import { Request, Friend } from '../types';
 const Buy4MePage: React.FC = () => {
   const user = auth.currentUser;
   const userId = user?.uid || '';
-  const [username, setUsername] = useState<string | null>(null);
 
   const [requests, setRequests] = useState<Request[]>([]);
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<string>('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [profile, setProfile] = useState<DocumentData | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -37,6 +38,22 @@ const Buy4MePage: React.FC = () => {
 
     fetchRequests();
   }, [userId]);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      try {
+        const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
+        if (profileDoc.exists()) {
+          setProfile(profileDoc.data());
+        }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    fetchProfile();
+  }, [user]);
 
   useEffect(() => {
     if (!userId) return;
@@ -78,13 +95,14 @@ const Buy4MePage: React.FC = () => {
         buyerUsername: friends.find((f) => f.id === selectedFriend)?.username || '',
         buyerId: selectedFriend,
         requesterId: userId,
-        requesterUsername: username,
+        requesterUsername: profile?.username || '',
         text: requestText,
         fullPrice: null,
         timestamp: Date.now(),
         unboughtItems: [],
         fulfillment: 'pending',
         payPalRequestSent: false,
+        verificationStatus: 'idle',
       };
 
       const docRef = await addDoc(collection(firestore, 'requests'), newRequest);
@@ -143,7 +161,7 @@ const Buy4MePage: React.FC = () => {
             requests
               .filter((r) => r.fulfillment === 'pending')
               .map((req) => (
-                <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm">
+                <div key={req.id} className="bg-[#F2E8CF] p-4 rounded shadow-sm mt-2">
                   <p className="font-medium">{req.buyerUsername}</p>
                   <p className="text-sm">{req.text}</p>
                 </div>

@@ -30,6 +30,7 @@ export interface Request {
   reimburseAmount?: number | null;
   purchaseLocation?: string | null;
   payPalRequestSent: boolean;
+  verificationStatus: 'idle' | 'loading' | 'verified' | 'notVerified';
 }
 
 export interface FriendRequest {

@@ -263,7 +263,7 @@ const ProfilePage: React.FC = () => {
                   onExit={handleOnExit}
                 >
                   <button className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded text-sm">
-                    {profile?.linkedBank ? "Change account" : "Link Bank Account"}
+                    {profile?.linkedBank ? "Change account" : "Link Account"}
                   </button>
                 </PlaidLink>
               ) : (
@@ -303,7 +303,7 @@ const ProfilePage: React.FC = () => {
           {incomingRequests.length === 0 ? (
             <p className="text-[#386641]">No friend requests</p>
           ) : (
-            <ul className="space-y-4">
+            <ul className="space-y-4 pt-2">
               {incomingRequests.map((req) => (
                 <li
                   key={req.id}
@@ -314,7 +314,7 @@ const ProfilePage: React.FC = () => {
                     onClick={() =>
                       acceptFriendRequest(req.id, req.initiatorId)
                     }
-                    className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                    className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded"
                   >
                     Accept
                   </button>

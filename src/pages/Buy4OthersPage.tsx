@@ -5,20 +5,20 @@ import {
   query,
   where,
   onSnapshot,
-  DocumentData,
   getDoc,
   doc,
   updateDoc,
 } from "firebase/firestore";
-import { Request } from "../types";
+import { Profile, Request } from "../types";
 
 
 const Buy4OthersPage: React.FC = () => {
   const [requests, setRequests] = useState<Request[]>([]);
-  const [profile, setProfile] = useState<DocumentData | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [customAmountModal, setCustomAmountModal] = useState<{
     id: string;
     currentAmount: number;
+    senderEmail: string;
   } | null>(null);
 
   const user = auth.currentUser;
@@ -29,7 +29,7 @@ const Buy4OthersPage: React.FC = () => {
       try {
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
         if (profileDoc.exists()) {
-          setProfile(profileDoc.data());
+          setProfile(profileDoc.data() as Profile);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -91,12 +91,16 @@ const Buy4OthersPage: React.FC = () => {
   };
 
   // Send the PayPal request and update the Firestore document with the sent amount.
-  const handleSendPayPalRequest = async (requestId: string, amount: number) => {
+  const handleSendPayPalRequest = async (requestId: string, amount: number, senderEmail: string) => {
     try {
       await fetch("/api/sendPayPalRequest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({
+          amount,
+          recipientEmail: profile?.paypal,
+          senderEmail,
+        }),
       });
       await updateDoc(doc(firestore, "requests", requestId), {
         payPalRequestSent: amount,
@@ -111,15 +115,16 @@ const Buy4OthersPage: React.FC = () => {
     if (customAmountModal) {
       await handleSendPayPalRequest(
         customAmountModal.id,
-        customAmountModal.currentAmount
+        customAmountModal.currentAmount,
+        customAmountModal.senderEmail!,
       );
       setCustomAmountModal(null);
     }
   };
 
   // Opens the modal for custom amount.
-  const openCustomAmountModal = (requestId: string, baseAmount: number) => {
-    setCustomAmountModal({ id: requestId, currentAmount: baseAmount });
+  const openCustomAmountModal = (requestId: string, baseAmount: number, senderEmail: string) => {
+    setCustomAmountModal({ id: requestId, currentAmount: baseAmount, senderEmail });
   };
 
   // Pending requests remain unchanged.
@@ -181,7 +186,8 @@ const Buy4OthersPage: React.FC = () => {
                             onClick={() =>
                               handleSendPayPalRequest(
                                 request.id!,
-                                request.reimburseAmount!
+                                request.reimburseAmount!,
+                                request.paypalAccountToRequestFrom ?? '',
                               )
                             }
                             className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
@@ -198,6 +204,7 @@ const Buy4OthersPage: React.FC = () => {
                               setCustomAmountModal({
                                 id: request.id!,
                                 currentAmount: request.reimburseAmount || 0,
+                                senderEmail: request.paypalAccountToRequestFrom ?? '',
                               })
                             }
                             className="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-300"
@@ -250,7 +257,8 @@ const Buy4OthersPage: React.FC = () => {
                             onClick={() =>
                               handleSendPayPalRequest(
                                 request.id!,
-                                request.fullPrice!
+                                request.fullPrice!,
+                                request.paypalAccountToRequestFrom ?? '',
                               )
                             }
                             className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
@@ -278,7 +286,8 @@ const Buy4OthersPage: React.FC = () => {
                           onClick={() =>
                             handleSendPayPalRequest(
                               request.id!,
-                              request.reimburseAmount!
+                              request.reimburseAmount!,
+                              request.paypalAccountToRequestFrom ?? '',
                             )
                           }
                           className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg text-left"
@@ -294,7 +303,8 @@ const Buy4OthersPage: React.FC = () => {
                           onClick={() =>
                             openCustomAmountModal(
                               request.id!,
-                              request.reimburseAmount || 0
+                              request.reimburseAmount || 0,
+                              request.paypalAccountToRequestFrom ?? '',
                             )
                           }
                           className="w-full bg-purple-500 hover:bg-purple-600 text-white font-semibold px-4 py-2 rounded-lg text-left"

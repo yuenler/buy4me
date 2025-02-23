@@ -7,6 +7,10 @@ export interface Profile {
   paypal?: string;
   location?: string;
   friends?: string[]; // array of userIds who are friends
+  plaidAccessToken?: string;
+  linkedBank?: boolean;
+  linkedPaypal?: boolean;
+  picture?: string;
 }
 
 export interface Friend {
@@ -31,6 +35,7 @@ export interface Request {
   purchaseLocation?: string | null;
   payPalRequestSent: boolean;
   verificationStatus: 'idle' | 'loading' | 'verified' | 'notVerified';
+  paypalAccountToRequestFrom?: string | null;
 }
 
 export interface FriendRequest {

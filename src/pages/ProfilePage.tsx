@@ -16,15 +16,15 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faCheck } from "@fortawesome/free-solid-svg-icons";
 import { PlaidLink } from "react-plaid-link";
 import axios from "axios";
-import { DocumentData } from "firebase/firestore";
+import { FriendRequest, Profile } from "../types";
 
 const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const user = auth.currentUser;
 
   // Firestore profile & friend requests state
-  const [profile, setProfile] = useState<DocumentData | null>(null);
-  const [incomingRequests, setIncomingRequests] = useState<DocumentData[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [incomingRequests, setIncomingRequests] = useState<FriendRequest[]>([]);
 
   // Plaid link token
   const [linkToken, setLinkToken] = useState<string | null>(null);
@@ -40,7 +40,7 @@ const ProfilePage: React.FC = () => {
       try {
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
         if (profileDoc.exists()) {
-          setProfile(profileDoc.data());
+          setProfile(profileDoc.data() as Profile);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -58,10 +58,10 @@ const ProfilePage: React.FC = () => {
         const friendRequestsRef = collection(firestore, "friend_requests");
         const q = query(friendRequestsRef, where("receiverId", "==", user.uid));
         const snapshot = await getDocs(q);
-        const requests = snapshot.docs.map((doc) => ({
+        const requests: FriendRequest[] = snapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-        }));
+        })) as unknown as FriendRequest[];
         setIncomingRequests(requests);
       } catch (error) {
         console.error("Error fetching incoming friend requests:", error);
@@ -115,7 +115,7 @@ const ProfilePage: React.FC = () => {
       // Refetch profile
       const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
       if (profileDoc.exists()) {
-        setProfile(profileDoc.data());
+        setProfile(profileDoc.data() as Profile);
       }
     } catch (error) {
       console.error("Error accepting friend request:", error);
@@ -136,7 +136,7 @@ const ProfilePage: React.FC = () => {
         });
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
         if (profileDoc.exists()) {
-          setProfile(profileDoc.data());
+          setProfile(profileDoc.data() as Profile);
         }
       }
     } catch (error) {
@@ -163,7 +163,7 @@ const ProfilePage: React.FC = () => {
       });
       const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
       if (profileDoc.exists()) {
-        setProfile(profileDoc.data());
+        setProfile(profileDoc.data() as Profile);
       }
       setShowPayPalModal(false);
     } catch (error) {
@@ -312,7 +312,7 @@ const ProfilePage: React.FC = () => {
                   <span className="text-[#386641]">{req.initiatorName}</span>
                   <button
                     onClick={() =>
-                      acceptFriendRequest(req.id, req.initiatorId)
+                      acceptFriendRequest(req.id ?? "", req.initiatorId)
                     }
                     className="bg-[#6A994E] hover:bg-[#386641] text-white px-4 py-2 rounded"
                   >

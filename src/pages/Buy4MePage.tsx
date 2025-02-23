@@ -7,11 +7,10 @@ import {
   getDoc,
   query,
   where,
-  DocumentData,
 } from 'firebase/firestore';
 import { firestore, auth } from '../firebase';
 import FriendModal from '../components/FriendModal';
-import { Request, Friend } from '../types';
+import { Request, Friend, Profile } from '../types';
 
 const Buy4MePage: React.FC = () => {
   const user = auth.currentUser;
@@ -21,7 +20,7 @@ const Buy4MePage: React.FC = () => {
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<string>('');
   const [modalVisible, setModalVisible] = useState(false);
-  const [profile, setProfile] = useState<DocumentData | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -45,7 +44,7 @@ const Buy4MePage: React.FC = () => {
       try {
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
         if (profileDoc.exists()) {
-          setProfile(profileDoc.data());
+          setProfile(profileDoc.data() as Profile);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -103,6 +102,7 @@ const Buy4MePage: React.FC = () => {
         fulfillment: 'pending',
         payPalRequestSent: false,
         verificationStatus: 'idle',
+        paypalAccountToRequestFrom: profile?.paypal,
       };
 
       const docRef = await addDoc(collection(firestore, 'requests'), newRequest);

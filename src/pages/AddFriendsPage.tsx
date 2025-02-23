@@ -18,6 +18,7 @@ import {
 import { auth, firestore } from "../firebase";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { Profile } from "../types";
 
 // FriendRequest interface as provided
 export interface FriendRequest {
@@ -37,7 +38,7 @@ const AddFriendsPage: React.FC = () => {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   // State to store the current user's profile from Firestore
   const [currentUserProfile, setCurrentUserProfile] =
-    useState<DocumentData | null>(null);
+    useState<Profile | null>(null);
   // State to store the fetched friends
   const [friends, setFriends] = useState<DocumentData[]>([]);
   const user = auth.currentUser;
@@ -49,7 +50,7 @@ const AddFriendsPage: React.FC = () => {
       try {
         const profileDoc = await getDoc(doc(firestore, "profiles", user.uid));
         if (profileDoc.exists()) {
-          setCurrentUserProfile(profileDoc.data());
+          setCurrentUserProfile(profileDoc.data() as Profile);
         }
       } catch (error) {
         console.error("Error fetching current user profile:", error);
@@ -64,7 +65,7 @@ const AddFriendsPage: React.FC = () => {
     if (!currentUserProfile || !currentUserProfile.friends) return;
     const fetchFriends = async () => {
       try {
-        const friendIds: string[] = currentUserProfile.friends;
+        const friendIds: string[] = currentUserProfile.friends as string[];
         const friendDocs = await Promise.all(
           friendIds.map((id) => getDoc(doc(firestore, "profiles", id)))
         );
